@@ -27,7 +27,7 @@ RUN poetry install
 RUN poetry run pip install gunicorn uvicorn-worker
 
 # Create static client build
-ADD vue /opt/run/vue
+ADD src/vue /opt/run/vue
 WORKDIR /opt/run/vue
 RUN /root/.local/share/pnpm/pnpm install
 RUN /root/.local/share/pnpm/pnpm build
