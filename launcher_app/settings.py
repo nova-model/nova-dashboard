@@ -15,16 +15,15 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY").strip('"')
-REFRESH_TOKEN_KEY = os.environ.get("REFRESH_TOKEN_KEY").strip('"').encode()
+SECRET_KEY = os.environ["SECRET_KEY"].strip('"')
+REFRESH_TOKEN_KEY = os.environ["REFRESH_TOKEN_KEY"].strip('"').encode()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG").strip('"') != "false"
+DEBUG = os.environ["DEBUG"].strip('"') != "false"
 
 ALLOWED_HOSTS = ["localhost", "nova.ornl.gov", "nova-test.ornl.gov"]
 CSRF_TRUSTED_ORIGINS = [
@@ -32,7 +31,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://nova.ornl.gov",
     "https://nova-test.ornl.gov",
 ]
-
 
 # Application definition
 
@@ -77,7 +75,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "launcher_app.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -87,7 +84,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -107,35 +103,27 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Authentication timeout
-SESSION_COOKIE_AGE = int(
-    os.environ.get("SESSION_COOKIE_AGE", 60 * 60 * 24 * 14)
-)  # 2 weeks
-
+SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", 60 * 60 * 24 * 14))  # 2 weeks
 
 # OAuth settings
-UCAMS_AUTH_URL = os.environ.get("UCAMS_AUTH_URL").strip('"')
-UCAMS_TOKEN_URL = os.environ.get("UCAMS_TOKEN_URL").strip('"')
-UCAMS_CLIENT_ID = os.environ.get("UCAMS_CLIENT_ID").strip('"')
-UCAMS_CLIENT_SECRET = os.environ.get("UCAMS_CLIENT_SECRET").strip('"')
-UCAMS_REDIRECT_URL = os.environ.get("UCAMS_REDIRECT_URL").strip('"')
-UCAMS_SCOPES = os.environ.get("UCAMS_SCOPES").strip('"')
-XCAMS_AUTH_URL = os.environ.get("XCAMS_AUTH_URL").strip('"')
-XCAMS_TOKEN_URL = os.environ.get("XCAMS_TOKEN_URL").strip('"')
-XCAMS_CLIENT_ID = os.environ.get("XCAMS_CLIENT_ID").strip('"')
-XCAMS_CLIENT_SECRET = os.environ.get("XCAMS_CLIENT_SECRET").strip('"')
-XCAMS_REDIRECT_URL = os.environ.get("XCAMS_REDIRECT_URL").strip('"')
-XCAMS_SCOPES = os.environ.get("XCAMS_SCOPES").strip('"')
-
+UCAMS_AUTH_URL = os.environ["UCAMS_AUTH_URL"].strip('"')
+UCAMS_TOKEN_URL = os.environ["UCAMS_TOKEN_URL"].strip('"')
+UCAMS_CLIENT_ID = os.environ["UCAMS_CLIENT_ID"].strip('"')
+UCAMS_CLIENT_SECRET = os.environ["UCAMS_CLIENT_SECRET"].strip('"')
+UCAMS_REDIRECT_URL = os.environ["UCAMS_REDIRECT_URL"].strip('"')
+UCAMS_SCOPES = os.environ["UCAMS_SCOPES"].strip('"')
+XCAMS_AUTH_URL = os.environ["XCAMS_AUTH_URL"].strip('"')
+XCAMS_TOKEN_URL = os.environ["XCAMS_TOKEN_URL"].strip('"')
+XCAMS_CLIENT_ID = os.environ["XCAMS_CLIENT_ID"].strip('"')
+XCAMS_CLIENT_SECRET = os.environ["XCAMS_CLIENT_SECRET"].strip('"')
+XCAMS_REDIRECT_URL = os.environ["XCAMS_REDIRECT_URL"].strip('"')
+XCAMS_SCOPES = os.environ["XCAMS_SCOPES"].strip('"')
 
 # Galaxy settings
-GALAXY_URL = os.environ.get("GALAXY_URL").strip('"')
-GALAXY_API_KEY_ENDPOINT = os.environ.get("GALAXY_API_KEY_ENDPOINT").strip('"')
-GALAXY_HISTORY_NAME = os.environ.get(
-    "GALAXY_HISTORY_NAME", "launcher_history"
-).strip('"')
-
+GALAXY_URL = os.environ["GALAXY_URL"].strip('"')
+GALAXY_API_KEY_ENDPOINT = os.environ["GALAXY_API_KEY_ENDPOINT"].strip('"')
+GALAXY_HISTORY_NAME = os.environ.get("GALAXY_HISTORY_NAME", "launcher_history").strip('"')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -147,7 +135,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

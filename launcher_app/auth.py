@@ -28,13 +28,9 @@ class AuthManager:
             self.oauth_state = OAuthSessionState.objects.get(user=request.user)
         else:
             try:
-                self.oauth_state = OAuthSessionState.objects.get(
-                    state_param=request.GET["state"]
-                )
+                self.oauth_state = OAuthSessionState.objects.get(state_param=request.GET["state"])
             except (KeyError, OAuthSessionState.DoesNotExist):
-                self.oauth_state = OAuthSessionState.objects.create(
-                    state_param=self.create_state_param()
-                )
+                self.oauth_state = OAuthSessionState.objects.create(state_param=self.create_state_param())
 
         self.ucams_session = OAuth2Session(
             settings.UCAMS_CLIENT_ID,
@@ -62,9 +58,7 @@ class AuthManager:
         try:
             user = get_user_model().objects.get(username=email)
         except get_user_model().DoesNotExist:
-            user = get_user_model().objects.create_user(
-                username=email, email=email, first_name=given_name
-            )
+            user = get_user_model().objects.create_user(username=email, email=email, first_name=given_name)  # type: ignore
 
         login(request, user)
 
@@ -75,9 +69,7 @@ class AuthManager:
         self.oauth_state.user = user
         self.oauth_state.save()
 
-    def redirect_handler(
-        self, request: HttpRequest, session_type: str
-    ) -> dict[str, Any]:
+    def redirect_handler(self, request: HttpRequest, session_type: str) -> dict[str, Any]:
         self.oauth_state.session_type = session_type
         self.oauth_state.save()
 
@@ -122,17 +114,13 @@ class AuthManager:
             case "ucams":
                 tokens = self.ucams_session.refresh_token(
                     settings.UCAMS_TOKEN_URL,
-                    auth=HTTPBasicAuth(
-                        settings.UCAMS_CLIENT_ID, settings.UCAMS_CLIENT_SECRET
-                    ),
+                    auth=HTTPBasicAuth(settings.UCAMS_CLIENT_ID, settings.UCAMS_CLIENT_SECRET),
                     refresh_token=self.get_refresh_token(),
                 )
             case "xcams":
                 tokens = self.xcams_session.refresh_token(
                     settings.XCAMS_TOKEN_URL,
-                    auth=HTTPBasicAuth(
-                        settings.XCAMS_CLIENT_ID, settings.XCAMS_CLIENT_SECRET
-                    ),
+                    auth=HTTPBasicAuth(settings.XCAMS_CLIENT_ID, settings.XCAMS_CLIENT_SECRET),
                     refresh_token=self.get_refresh_token(),
                 )
 
@@ -142,11 +130,7 @@ class AuthManager:
         return self.oauth_state.access_token
 
     def get_refresh_token(self) -> str:
-        return (
-            Fernet(settings.REFRESH_TOKEN_KEY)
-            .decrypt(self.oauth_state.refresh_token.encode())
-            .decode()
-        )
+        return Fernet(settings.REFRESH_TOKEN_KEY).decrypt(self.oauth_state.refresh_token.encode()).decode()
 
     def get_ucams_auth_url(self) -> str:
         return self.ucams_session.authorization_url(settings.UCAMS_AUTH_URL)[0]
@@ -159,7 +143,5 @@ class AuthManager:
         self.oauth_state.save()
 
     def save_refresh_token(self, token: str) -> None:
-        self.oauth_state.refresh_token = (
-            Fernet(settings.REFRESH_TOKEN_KEY).encrypt(token.encode()).decode()
-        )
+        self.oauth_state.refresh_token = Fernet(settings.REFRESH_TOKEN_KEY).encrypt(token.encode()).decode()
         self.oauth_state.save()

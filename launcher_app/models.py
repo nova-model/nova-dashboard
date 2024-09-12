@@ -18,12 +18,11 @@ class OAuthSessionState(models.Model):
     alive for as long as possible.
     """
 
-    user = models.OneToOneField(
-        get_user_model(), blank=True, null=True, on_delete=models.CASCADE
-    )
-    access_token = models.CharField(max_length=255, blank=True)
-    create_time = models.DateTimeField(auto_now_add=True)
-    galaxy_api_key = models.CharField(max_length=128, blank=True)
-    refresh_token = models.CharField(max_length=255, blank=True)
-    session_type = models.CharField(max_length=32, blank=True)  # ucams or xcams
-    state_param = models.CharField(max_length=128, blank=True)
+    user = models.OneToOneField(get_user_model(), blank=True, null=True, on_delete=models.CASCADE)  # type: ignore
+    access_token = models.CharField(max_length=255, blank=True)  # type: ignore
+    create_time = models.DateTimeField(auto_now_add=True)  # type: ignore
+    galaxy_api_key = models.CharField(max_length=128, blank=True)  # type: ignore
+    refresh_token = models.CharField(max_length=255, blank=True)  # type: ignore
+    # ucams or xcams
+    session_type = models.CharField(max_length=32, blank=True)  # type: ignore
+    state_param = models.CharField(max_length=128, blank=True)  # type: ignore

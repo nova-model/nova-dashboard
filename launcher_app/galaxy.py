@@ -28,7 +28,7 @@ class GalaxyManager:
     def __init__(self, auth_manager: AuthManager):
         """Init."""
         self.auth_manager = auth_manager
-        self.galaxy_instance = None  # type: ignore[attr-defined]
+        self._connect_to_galaxy()
 
     def _connect_to_galaxy(self) -> None:
         try:
@@ -40,20 +40,16 @@ class GalaxyManager:
             logger.error(f"Failed to connect to Galaxy: {e}")
 
             self.auth_manager.delete_galaxy_api_key()
-            self.galaxy_instance = None
+            self.galaxy_instance = None  # type: ignore
 
             raise Exception(f"Failed to connect to Galaxy: {e}") from None
 
     def _get_history_id(self) -> str:
-        histories = self.galaxy_instance.histories.get_histories(
-            name=settings.GALAXY_HISTORY_NAME
-        )
+        histories = self.galaxy_instance.histories.get_histories(name=settings.GALAXY_HISTORY_NAME)
         if len(histories) > 0:
             return histories[0]["id"]
 
-        result = self.galaxy_instance.histories.create_history(
-            settings.GALAXY_HISTORY_NAME
-        )
+        result = self.galaxy_instance.histories.create_history(settings.GALAXY_HISTORY_NAME)
         return result["id"]
 
     def launch_job(self, tool_id: str) -> None:
@@ -67,19 +63,13 @@ class GalaxyManager:
             self._get_history_id(), contents=True, deleted=False, details="all"
         )
         job_list = []
-        entry_points = self.galaxy_instance.make_get_request(
-            f"{settings.GALAXY_URL}/api/entry_points?running=true"
-        )
+        entry_points = self.galaxy_instance.make_get_request(f"{settings.GALAXY_URL}/api/entry_points?running=true")
         for dataset in history_contents:
             try:
                 # dataset does not contain tool_id
                 job_id = dataset["creating_job"]
                 job_info = self.galaxy_instance.jobs.show_job(job_id)
-                if (
-                    job_info["state"] == "queued"
-                    or job_info["state"] == "running"
-                    or job_info["state"] == "error"
-                ):
+                if job_info["state"] == "queued" or job_info["state"] == "running" or job_info["state"] == "error":
                     # Search entry points json for correct job listing and try
                     # to get the target url.
                     target = None

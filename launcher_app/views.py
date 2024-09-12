@@ -59,7 +59,7 @@ def get_user(request: HttpRequest) -> JsonResponse:
 
     given_name = None
     if request.user.is_authenticated:
-        given_name = request.user.first_name
+        given_name = request.user.first_name  # type: ignore
 
     return JsonResponse(
         {
