@@ -1,29 +1,43 @@
-FROM --platform=amd64 python:3.10-slim AS source
+FROM --platform=amd64 ubuntu:noble
+ARG DEBIAN_FRONTEND=noninteractive
 
-# make sure image can run as non-root user
+RUN apt update && apt upgrade -y && apt install -y \
+    curl \
+    software-properties-common \
+    nginx
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt update && apt install -y \
+    python3.10
 
+# Install Poetry
+RUN curl -fsSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3.10 -
+ENV PATH="$PATH:/etc/poetry/bin"
 
-ENV POETRY_CACHE_DIR=/poetry/.cache
-ENV POETRY_CONFIG_DIR=/poetry/.config
-ENV POETRY_HOME=/poetry
+# Install Node.js LTS & pnpm
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt install -y nodejs
+ENV SHELL=bash
+RUN curl -fsSL https://get.pnpm.io/install.sh | sh -
 
-RUN pip install poetry
-COPY . /src
-WORKDIR /src
-
+# Setup Django
+ADD ./ /opt/run/django
+WORKDIR /opt/run/django
 RUN poetry install
-RUN poetry build --format=wheel
+# Install dependencies only used in production builds
+RUN poetry run pip install gunicorn uvicorn-worker
 
-RUN chmod og+rwX /poetry
-RUN chmod og+rwX /src
+# Create static client build
+ADD src/vue /opt/run/vue
+WORKDIR /opt/run/vue
+RUN /root/.local/share/pnpm/pnpm install
+RUN /root/.local/share/pnpm/pnpm build
 
+ADD scripts/nginx.conf /etc/nginx/nginx.conf
+ADD scripts/entrypoint.sh /opt/run/entrypoint.sh
+ADD scripts/manage.py /opt/run/django/manage.py
 
+RUN mkdir -p /tmp
+RUN mkdir -p /run/nginx
 
-FROM --platform=amd64 ubuntu:22.04 AS run
-
-RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get -y install tzdata
-RUN apt-get install -y python3.10 curl
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-
-COPY --from=source /src/dist /dist
-RUN pip install /dist/*.whl
+WORKDIR /opt/run/django
+ENTRYPOINT ["bash", "/opt/run/entrypoint.sh"]
