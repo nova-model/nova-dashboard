@@ -34,6 +34,7 @@ RUN /root/.local/share/pnpm/pnpm build
 
 ADD scripts/nginx.conf /etc/nginx/nginx.conf
 ADD scripts/entrypoint.sh /opt/run/entrypoint.sh
+ADD scripts/manage.py /opt/run/django/manage.py
 
 RUN mkdir -p /tmp
 RUN mkdir -p /run/nginx
