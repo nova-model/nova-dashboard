@@ -6,4 +6,4 @@ from django.apps import AppConfig
 class LauncherConfig(AppConfig):
     """App config for Dashboard."""
 
-    name = "launcher_app"
+    name = "src.launcher_app"

@@ -35,7 +35,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
-    "src.apps.LauncherConfig",
+    "src.launcher_app.apps.LauncherConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,7 +55,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "src.urls"
+ROOT_URLCONF = "src.launcher_app.urls"
 
 TEMPLATES = [
     {
