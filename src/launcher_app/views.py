@@ -5,6 +5,7 @@ specified in urls.py file.
 """
 
 import json
+from importlib.resources import open_text
 
 from django.contrib.auth.decorators import login_required
 from django.http import (
@@ -21,6 +22,12 @@ from requests import request as proxy_request
 
 from .auth import AuthManager
 from .galaxy import GalaxyManager
+
+
+@require_GET
+def get_vuetify_config(request: HttpRequest) -> JsonResponse:
+    with open_text("trame_facade", "vuetify_config.json") as vuetify_config:
+        return JsonResponse(json.load(vuetify_config))
 
 
 @require_GET
