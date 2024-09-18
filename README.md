@@ -11,12 +11,11 @@ You will need to install [Poetry](https://python-poetry.org/) and [pnpm](https:/
 the following commands to build the source code.
 
 ```bash
-cd django
 poetry install
 ```
 
 ```bash
-cd vue
+cd src/vue
 pnpm i
 ```
 
@@ -55,7 +54,7 @@ pnpm run dev --host 0.0.0.0 --port 5173
 ```
 After that to start the application (from the root directory):
 ```bash
-python ./scripts/manage.py migrate && python ./scripts/manage.py runserver_plus --insecure 0.0.0.0:8080
+poetry run ./manage.py migrate && poetry run ./manage.py runserver_plus --insecure 0.0.0.0:8080
 ````
 
 In order to use the authentication locally with a non-https server, you will need to set the following environment variable:
