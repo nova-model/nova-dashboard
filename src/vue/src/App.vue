@@ -4,7 +4,7 @@
         <v-main>
             <v-app-bar>
                 <v-app-bar-title class="cursor-pointer" @click="$router.push('/')">
-                    NDIP App Dashboard
+                    Neutrons Application Dashboard
                 </v-app-bar-title>
 
                 <v-spacer />

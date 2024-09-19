@@ -2,7 +2,9 @@
 <template>
     <v-container class="align-start d-flex justify-center mt-16">
         <v-card width="1280">
-            <v-card-title class="text-center"> Welcome to the NDIP App Dashboard </v-card-title>
+            <v-card-title class="text-center">
+                Welcome to the Neutrons Application Dashboard
+            </v-card-title>
 
             <v-card-text>
                 <p class="text-center">
