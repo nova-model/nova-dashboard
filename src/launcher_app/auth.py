@@ -102,6 +102,11 @@ class AuthManager:
 
             data = response.json()
             if "err_msg" in data:
+                if data["err_msg"].startswith("Cannot locate user by access token."):
+                    data["err_msg"] = (
+                        f"Please login to {settings.GALAXY_URL} once with {self.oauth_state.session_type.upper()} "
+                        "before using this dashboard."
+                    )
                 raise Exception(data["err_msg"])
 
             self.oauth_state.galaxy_api_key = response.json()["api_key"]

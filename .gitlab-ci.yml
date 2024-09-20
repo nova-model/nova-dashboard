@@ -1,5 +1,5 @@
-# stages:
-#   - lint
+stages:
+  - lint
 #   - test
 #   - image
 #   - package
@@ -9,26 +9,26 @@
 #   IMAGE_NAME: ${NDIP_DOCKER_REPOSITORY}/${CI_PROJECT_PATH}
 #   IMAGE_TAG: "0.1.0"
 
-# before_script:
-#   - curl https://code.ornl.gov/rse-deployment/rse-sharables/raw/master/rse-bash-modules.sh -O
-#   - docker login -u $NDIP_DOCKER_USER -p $NDIP_DOCKER_PASSWORD $NDIP_DOCKER_REPOSITORY
-#   - source rse-bash-modules.sh
-#   - func_rse_docker_cleanup
+before_script:
+  - curl https://code.ornl.gov/rse-deployment/rse-sharables/raw/master/rse-bash-modules.sh -O
+  - docker login -u $NDIP_DOCKER_USER -p $NDIP_DOCKER_PASSWORD $NDIP_DOCKER_REPOSITORY
+  - source rse-bash-modules.sh
+  - func_rse_docker_cleanup
 
-# after_script:
-#   - curl https://code.ornl.gov/rse-deployment/rse-sharables/raw/master/rse-bash-modules.sh -O
-#   - source rse-bash-modules.sh
-#   - func_rse_docker_cleanup
+after_script:
+  - curl https://code.ornl.gov/rse-deployment/rse-sharables/raw/master/rse-bash-modules.sh -O
+  - source rse-bash-modules.sh
+  - func_rse_docker_cleanup
 
-# lint-check:
-#   stage: lint
-#   script:
-#     - docker build -f dockerfiles/Dockerfile --target source -t image .
-#     - docker run -u `id -u`:`id -g` image poetry run ruff check
-#     - docker run -u `id -u`:`id -g` image poetry run ruff format --check
-#     - docker run -u `id -u`:`id -g` image poetry run mypy .
-#   tags:
-#     - rse-multi-builder
+lint-check:
+  stage: lint
+  script:
+    - docker build -f dockerfiles/Dockerfile --target source -t image .
+    - docker run -u `id -u`:`id -g` image poetry run ruff check
+    - docker run -u `id -u`:`id -g` image poetry run ruff format --check
+    - docker run -u `id -u`:`id -g` image poetry run mypy .
+  tags:
+    - rse-multi-builder
 
 # unit-tests:
 #   stage: test
