@@ -39,7 +39,7 @@ norecursedirs = [".git", "tmp*", "_tmp*", "__pycache__"]
 
 [tool.ruff]
 line-length = 120
-exclude = ["src/launcher_app/migrations"]
+exclude = ["src/launcher_app/migrations", "src/vue"]
 
 [tool.ruff.lint]
 select = [
@@ -74,7 +74,7 @@ check_untyped_defs = true
 disallow_untyped_defs = true
 ignore_errors = false
 disable_error_code = ["import-untyped"]
-exclude = ["src/launcher_app/migrations"]
+exclude = ["src/launcher_app/migrations", "src/vue"]
 
 [tool.coverage.report]
 omit = [

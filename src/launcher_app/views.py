@@ -85,10 +85,10 @@ def _create_galaxy_error(exception: Exception) -> JsonResponse:
 @login_required
 @require_POST
 def galaxy_launch(request: HttpRequest) -> HttpResponse:
-    auth_manager = AuthManager(request)
-    galaxy_manager = GalaxyManager(auth_manager)
-
     try:
+        auth_manager = AuthManager(request)
+        galaxy_manager = GalaxyManager(auth_manager)
+
         data = json.loads(request.body)
         galaxy_manager.launch_job(data.get("tool_id", None))
 
@@ -100,10 +100,10 @@ def galaxy_launch(request: HttpRequest) -> HttpResponse:
 @login_required
 @require_GET
 def galaxy_monitor(request: HttpRequest) -> JsonResponse:
-    auth_manager = AuthManager(request)
-    galaxy_manager = GalaxyManager(auth_manager)
-
     try:
+        auth_manager = AuthManager(request)
+        galaxy_manager = GalaxyManager(auth_manager)
+
         return JsonResponse({"jobs": galaxy_manager.monitor_jobs()})
     except Exception as e:
         return _create_galaxy_error(e)
@@ -112,10 +112,10 @@ def galaxy_monitor(request: HttpRequest) -> JsonResponse:
 @login_required
 @require_POST
 def galaxy_stop(request: HttpRequest) -> HttpResponse:
-    auth_manager = AuthManager(request)
-    galaxy_manager = GalaxyManager(auth_manager)
-
     try:
+        auth_manager = AuthManager(request)
+        galaxy_manager = GalaxyManager(auth_manager)
+
         data = json.loads(request.body)
         galaxy_manager.stop_job(data.get("job_id", None))
 

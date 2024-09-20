@@ -1,5 +1,10 @@
-FROM --platform=amd64 ubuntu:noble
+FROM --platform=amd64 ubuntu:noble AS source
 ARG DEBIAN_FRONTEND=noninteractive
+
+# make sure image can run as non-root user
+ENV POETRY_CACHE_DIR=/poetry/.cache
+ENV POETRY_CONFIG_DIR=/poetry/.config
+ENV POETRY_HOME=/poetry
 
 RUN apt update && apt upgrade -y && apt install -y \
     curl \
@@ -10,8 +15,8 @@ RUN apt update && apt install -y \
     python3.10
 
 # Install Poetry
-RUN curl -fsSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3.10 -
-ENV PATH="$PATH:/etc/poetry/bin"
+RUN curl -fsSL https://install.python-poetry.org | python3.10 -
+ENV PATH="$PATH:/poetry/bin"
 
 # Install Node.js LTS & pnpm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -23,13 +28,25 @@ RUN curl -fsSL https://get.pnpm.io/install.sh | sh -
 ADD ./ /opt/run/django
 WORKDIR /opt/run/django
 RUN poetry install
-# Install dependencies only used in production builds
-RUN poetry run pip install gunicorn uvicorn-worker
 
-# Create static client build
+# Setup Vue.js
 ADD src/vue /opt/run/vue
 WORKDIR /opt/run/vue
 RUN /root/.local/share/pnpm/pnpm install
+
+WORKDIR /opt/run/django
+RUN chmod og+rwX /poetry
+RUN chmod og+rwX /opt/run/django
+
+
+FROM source AS run
+
+# Install dependencies only used in production builds
+WORKDIR /opt/run/django
+RUN poetry run pip install gunicorn uvicorn-worker
+
+# Create static client build
+WORKDIR /opt/run/vue
 RUN /root/.local/share/pnpm/pnpm build
 
 ADD scripts/nginx.conf /etc/nginx/nginx.conf
