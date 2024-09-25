@@ -39,6 +39,7 @@
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
 
+import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 
 const props = defineProps({
@@ -49,6 +50,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const job = useJobStore()
 const user = useUserStore()
 
 onMounted(async () => {
@@ -56,6 +58,8 @@ onMounted(async () => {
     user.getAutoopen()
 
     if (user.is_logged_in) {
+        job.startMonitor(user)
+
         const lastpath = window.localStorage.getItem("lastpath")
         const redirect = window.localStorage.getItem("redirect")
 

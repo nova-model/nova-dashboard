@@ -9,6 +9,8 @@
 
                 <v-spacer />
 
+                <ActiveToolsPanel class="mr-4" />
+
                 <span v-if="is_logged_in" class="pr-2 text-button">Welcome, {{ given_name }}</span>
                 <v-btn v-else>
                     Sign In
@@ -80,6 +82,7 @@
 import { storeToRefs } from "pinia"
 import { RouterView } from "vue-router"
 
+import ActiveToolsPanel from "@/components/ActiveToolsPanel.vue"
 import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 
