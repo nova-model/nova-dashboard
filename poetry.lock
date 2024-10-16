@@ -637,6 +637,22 @@ url = "https://code.ornl.gov/api/v4/projects/16294/packages/pypi/simple"
 reference = "trame-facade"
 
 [[package]]
+name = "django-dotenv"
+version = "1.4.2"
+description = "foreman reads from .env. manage.py doesn't. Let's fix that."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-dotenv-1.4.2.tar.gz", hash = "sha256:3812bb0f4876cf31f902aad140f0645e120e51ee30eb7c40c22050f58a0e4adb"},
+    {file = "django_dotenv-1.4.2-py2.py3-none-any.whl", hash = "sha256:a9b1b40a70bd321acd231926acedb9bd2c5e873e33a1873b34a7276d196a765e"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://code.ornl.gov/api/v4/projects/16294/packages/pypi/simple"
+reference = "trame-facade"
+
+[[package]]
 name = "django-extensions"
 version = "3.2.3"
 description = "Extensions for Django"
@@ -2059,4 +2075,4 @@ reference = "trame-facade"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "32d53da89ae25d64d4211364a684911c916d149f9aff3951755117bb9d389a5d"
+content-hash = "c47b899d50a7221beb52db4d9a76a236936406ec16edd8872f605d30ee2f0a5a"
