@@ -27,6 +27,10 @@ lint-check:
     - docker run -u `id -u`:`id -g` image poetry run ruff check
     - docker run -u `id -u`:`id -g` image poetry run ruff format --check
     - docker run -u `id -u`:`id -g` image poetry run mypy .
+    - docker run -u `id -u`:`id -g` -w /opt/run/vue image pnpm exec prettier --check .
+    - docker run -u `id -u`:`id -g` -w /opt/run/vue image pnpm exec eslint .
+    - docker tag image ${IMAGE_NAME}:src-${CI_COMMIT_SHA}
+    - docker push ${IMAGE_NAME}:src-${CI_COMMIT_SHA}
   tags:
     - rse-multi-builder
 
@@ -34,13 +38,11 @@ unit-tests:
   stage: test
   script:
     - mkdir reports
-    - docker build -f dockerfiles/Dockerfile --target source -t image .
-    - docker run -u `id -u`:`id -g` -v `pwd`/reports:/opt/run/django/reports image poetry run coverage run
-    - docker run -u `id -u`:`id -g` -v `pwd`/reports:/opt/run/django/reports image poetry run coverage report
-    - docker run -u `id -u`:`id -g` -v `pwd`/reports:/opt/run/django/reports image poetry run coverage xml -o reports/coverage.xml
+    - docker pull ${IMAGE_NAME}:src-${CI_COMMIT_SHA}
+    - docker run -u `id -u`:`id -g` -v `pwd`/reports:/opt/run/django/reports ${IMAGE_NAME}:src-${CI_COMMIT_SHA} poetry run coverage run
+    - docker run -u `id -u`:`id -g` -v `pwd`/reports:/opt/run/django/reports ${IMAGE_NAME}:src-${CI_COMMIT_SHA} poetry run coverage report
+    - docker run -u `id -u`:`id -g` -v `pwd`/reports:/opt/run/django/reports ${IMAGE_NAME}:src-${CI_COMMIT_SHA} poetry run coverage xml -o reports/coverage.xml
     - sed -i "s:<source>/src:<source>${CI_BUILDS_DIR}/${CI_PROJECT_PATH}:" reports/coverage.xml
-    - docker tag image ${IMAGE_NAME}:src-${CI_COMMIT_SHA}
-    - docker push ${IMAGE_NAME}:src-${CI_COMMIT_SHA}
 
   coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
