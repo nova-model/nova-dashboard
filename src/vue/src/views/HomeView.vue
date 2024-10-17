@@ -35,7 +35,6 @@
     </v-container>
     <v-dialog v-model="user.prompt_login" persistent width="400">
         <v-card class="text-center">
-            <!-- TODO: don't hard code this stuff-->
             <v-card-text>
                 In order to use this dashboard, you will need to complete a one-time login to
                 Calvera. Please go to <a target="_blank" :href="galaxy_url">{{ galaxy_url }}</a> and

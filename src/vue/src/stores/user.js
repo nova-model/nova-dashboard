@@ -18,11 +18,12 @@ export const useUserStore = defineStore("user", {
             const data = await response.json()
 
             this.given_name = data.given_name
-            this.is_logged_in = data.is_logged_in
+            this.is_logged_in = data.is_logged_in && !this.prompt_login
             this.ucams_auth_url = data.ucams
             this.xcams_auth_url = data.xcams
         },
         async userStatus() {
+            this.is_logged_in = false;
             const response = await fetch("/api/galaxy/status/");
             const data = await response.json();
 
@@ -31,6 +32,7 @@ export const useUserStore = defineStore("user", {
                 this.login_type = data["auth_type"];
             } else {
                 this.prompt_login = false;
+                this.is_logged_in = true;
             }
         },
         userMonitorLogin() {

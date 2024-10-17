@@ -83,7 +83,7 @@ def _create_galaxy_error(exception: Exception) -> JsonResponse:
 
 
 def _create_galaxy_status_error(exception: Exception, auth_type: str) -> JsonResponse:
-    return JsonResponse({"error": str(exception), "auth_type": auth_type}, status=500)
+    return JsonResponse({"error": str(exception), "auth_type": auth_type.upper()}, status=500)
 
 
 @login_required
