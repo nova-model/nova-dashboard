@@ -8,7 +8,7 @@ export const useUserStore = defineStore("user", {
             is_logged_in: false,
             ucams_auth_url: "/",
             xcams_auth_url: "/",
-            prompt_login: true,
+            prompt_login: false,
             login_type: "",
         }
     },
