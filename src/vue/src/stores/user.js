@@ -8,7 +8,8 @@ export const useUserStore = defineStore("user", {
             is_logged_in: false,
             ucams_auth_url: "/",
             xcams_auth_url: "/",
-            prompt_login: false,
+            prompt_login: true,
+            login_type: "",
         }
     },
     actions: {
@@ -24,8 +25,10 @@ export const useUserStore = defineStore("user", {
         async userStatus() {
             const response = await fetch("/api/galaxy/status/");
             const data = await response.json();
-            if (data["error"].includes("Please login")) {
+
+            if (data["error"] && data["error"].includes("Please login")) {
                 this.prompt_login = true;
+                this.login_type = data["auth_type"];
             } else {
                 this.prompt_login = false;
             }
@@ -53,6 +56,7 @@ export const useUserStore = defineStore("user", {
             this.ucams_auth_url = "/"
             this.xcams_auth_url = "/"
             this.prompt_login = false
+            this.login_type = ""
         },
     }
 })

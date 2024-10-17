@@ -11,7 +11,7 @@ export default defineConfig({
       'top-level-await': true
     }
   },
-  envDir: '..',
+  envDir: '../..',
   plugins: [
     vue(),
     vuetify(),
