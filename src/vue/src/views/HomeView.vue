@@ -33,6 +33,13 @@
             </v-card-text>
         </v-card>
     </v-container>
+    <v-dialog v-model="user.prompt_login" persistent width="auto">
+        <v-card>
+            <!-- TODO: don't hard code this stuff-->
+             <a target="_blank" :href="galaxy_url">In order to use the Dashboard, you will need to complete a one-time login to Calvera. Please go to {{ galaxy_url }} and log into Calvera.</a>
+             <v-btn width="200" margin="auto" @click="stopLoginPrompt">Cancel Login</v-btn>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script setup>
@@ -52,14 +59,17 @@ const props = defineProps({
 const router = useRouter()
 const job = useJobStore()
 const user = useUserStore()
+const galaxy_url = import.meta.env.VITE_GALAXY_URL;
 
 onMounted(async () => {
     await user.getUser()
     user.getAutoopen()
-
     if (user.is_logged_in) {
+        await user.userStatus()
+        if (user.prompt_login) {
+            user.userMonitorLogin();
+        }
         job.startMonitor(user)
-
         const lastpath = window.localStorage.getItem("lastpath")
         const redirect = window.localStorage.getItem("redirect")
 
@@ -75,4 +85,8 @@ onMounted(async () => {
         window.localStorage.setItem("redirect", true)
     }
 })
+
+function stopLoginPrompt() {
+    user.resetUser();
+}
 </script>

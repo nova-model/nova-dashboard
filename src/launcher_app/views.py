@@ -99,6 +99,18 @@ def galaxy_launch(request: HttpRequest) -> HttpResponse:
 
 @login_required
 @require_GET
+def galaxy_status(request: HttpRequest) -> JsonResponse:
+    try:
+        auth_manager = AuthManager(request)
+        GalaxyManager(auth_manager)
+
+        return JsonResponse({"status": "ok"})
+    except Exception as e:
+        return _create_galaxy_error(e)
+
+
+@login_required
+@require_GET
 def galaxy_monitor(request: HttpRequest) -> JsonResponse:
     try:
         auth_manager = AuthManager(request)
