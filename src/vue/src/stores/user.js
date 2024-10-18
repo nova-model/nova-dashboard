@@ -9,7 +9,7 @@ export const useUserStore = defineStore("user", {
             ucams_auth_url: "/",
             xcams_auth_url: "/",
             requires_galaxy_login: false,
-            login_type: "",
+            login_type: ""
         }
     },
     actions: {
@@ -23,24 +23,24 @@ export const useUserStore = defineStore("user", {
             this.xcams_auth_url = data.xcams
         },
         async userStatus() {
-            this.is_logged_in = false;
-            const response = await fetch("/api/galaxy/user_status/");
-            const data = await response.json();
+            this.is_logged_in = false
+            const response = await fetch("/api/galaxy/user_status/")
+            const data = await response.json()
 
             if (response.status == 450) {
-                this.requires_galaxy_login = true;
-                this.login_type = data["auth_type"];
+                this.requires_galaxy_login = true
+                this.login_type = data["auth_type"]
             } else {
-                this.requires_galaxy_login = false;
-                this.is_logged_in = true;
+                this.requires_galaxy_login = false
+                this.is_logged_in = true
             }
         },
         userMonitorLogin() {
             setInterval(() => {
                 if (this.requires_galaxy_login) {
-                    this.userStatus();
+                    this.userStatus()
                 } else {
-                    return;
+                    return
                 }
             }, 2000)
         },
@@ -59,6 +59,6 @@ export const useUserStore = defineStore("user", {
             this.xcams_auth_url = "/"
             this.requires_galaxy_login = false
             this.login_type = ""
-        },
+        }
     }
 })

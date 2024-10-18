@@ -2,6 +2,7 @@ FROM --platform=amd64 ubuntu:noble AS source
 ARG DEBIAN_FRONTEND=noninteractive
 
 # make sure image can run as non-root user
+ENV PNPM_HOME=/pnpm
 ENV POETRY_CACHE_DIR=/poetry/.cache
 ENV POETRY_CONFIG_DIR=/poetry/.config
 ENV POETRY_HOME=/poetry
@@ -16,13 +17,14 @@ RUN apt update && apt install -y \
 
 # Install Poetry
 RUN curl -fsSL https://install.python-poetry.org | python3.10 -
-ENV PATH="$PATH:/poetry/bin"
+ENV PATH="$PATH:$POETRY_HOME/bin"
 
 # Install Node.js LTS & pnpm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt install -y nodejs
 ENV SHELL=bash
 RUN curl -fsSL https://get.pnpm.io/install.sh | sh -
+ENV PATH="$PATH:$PNPM_HOME"
 
 # Setup Django
 ADD ./ /opt/run/django
@@ -32,9 +34,10 @@ RUN poetry install
 # Setup Vue.js
 ADD src/vue /opt/run/vue
 WORKDIR /opt/run/vue
-RUN /root/.local/share/pnpm/pnpm install
+RUN pnpm install
 
 WORKDIR /opt/run/django
+RUN chmod og+rwX /pnpm
 RUN chmod og+rwX /poetry
 RUN chmod og+rwX /opt/run/django
 
@@ -47,7 +50,7 @@ RUN poetry run pip install gunicorn uvicorn-worker
 
 # Create static client build
 WORKDIR /opt/run/vue
-RUN /root/.local/share/pnpm/pnpm build
+RUN pnpm build
 
 ADD scripts/nginx.conf /etc/nginx/nginx.conf
 ADD scripts/entrypoint.sh /opt/run/entrypoint.sh
