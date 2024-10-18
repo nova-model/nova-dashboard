@@ -8,7 +8,7 @@ export const useUserStore = defineStore("user", {
             is_logged_in: false,
             ucams_auth_url: "/",
             xcams_auth_url: "/",
-            prompt_login: false,
+            requires_galaxy_login: false,
             login_type: "",
         }
     },
@@ -18,26 +18,26 @@ export const useUserStore = defineStore("user", {
             const data = await response.json()
 
             this.given_name = data.given_name
-            this.is_logged_in = data.is_logged_in && !this.prompt_login
+            this.is_logged_in = data.is_logged_in && !this.requires_galaxy_login
             this.ucams_auth_url = data.ucams
             this.xcams_auth_url = data.xcams
         },
         async userStatus() {
             this.is_logged_in = false;
-            const response = await fetch("/api/galaxy/status/");
+            const response = await fetch("/api/galaxy/user_status/");
             const data = await response.json();
 
-            if (data["error"] && data["error"].includes("Please login")) {
-                this.prompt_login = true;
+            if (response.status == 450) {
+                this.requires_galaxy_login = true;
                 this.login_type = data["auth_type"];
             } else {
-                this.prompt_login = false;
+                this.requires_galaxy_login = false;
                 this.is_logged_in = true;
             }
         },
         userMonitorLogin() {
             setInterval(() => {
-                if (this.prompt_login) {
+                if (this.requires_galaxy_login) {
                     this.userStatus();
                 } else {
                     return;
@@ -57,7 +57,7 @@ export const useUserStore = defineStore("user", {
             this.is_logged_in = false
             this.ucams_auth_url = "/"
             this.xcams_auth_url = "/"
-            this.prompt_login = false
+            this.requires_galaxy_login = false
             this.login_type = ""
         },
     }

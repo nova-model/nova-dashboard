@@ -82,8 +82,8 @@ def _create_galaxy_error(exception: Exception) -> JsonResponse:
     return JsonResponse({"error": str(exception)}, status=500)
 
 
-def _create_galaxy_status_error(exception: Exception, auth_type: str) -> JsonResponse:
-    return JsonResponse({"error": str(exception), "auth_type": auth_type.upper()}, status=500)
+def _create_galaxy_status_error(exception: Exception, auth_type: str, status_code: int) -> JsonResponse:
+    return JsonResponse({"error": str(exception), "auth_type": auth_type.upper()}, status=status_code)
 
 
 @login_required
@@ -103,7 +103,7 @@ def galaxy_launch(request: HttpRequest) -> HttpResponse:
 
 @login_required
 @require_GET
-def galaxy_status(request: HttpRequest) -> JsonResponse:
+def galaxy_user_status(request: HttpRequest) -> JsonResponse:
     session_type = ""
     try:
         auth_manager = AuthManager(request)
@@ -112,7 +112,7 @@ def galaxy_status(request: HttpRequest) -> JsonResponse:
 
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        return _create_galaxy_status_error(e, session_type)
+        return _create_galaxy_status_error(e, session_type, status_code=450)
 
 
 @login_required

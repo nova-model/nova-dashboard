@@ -33,7 +33,7 @@
             </v-card-text>
         </v-card>
     </v-container>
-    <v-dialog v-model="user.prompt_login" persistent width="400">
+    <v-dialog v-model="user.requires_galaxy_login" persistent width="400">
         <v-card class="text-center">
             <v-card-text>
                 In order to use this dashboard, you will need to complete a one-time login to
@@ -71,7 +71,7 @@ onMounted(async () => {
     user.getAutoopen()
     if (user.is_logged_in) {
         await user.userStatus()
-        if (user.prompt_login) {
+        if (user.requires_galaxy_login) {
             user.userMonitorLogin();
         }
         job.startMonitor(user)
