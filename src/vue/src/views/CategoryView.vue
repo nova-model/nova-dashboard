@@ -65,9 +65,6 @@ const { galaxy_error } = storeToRefs(job)
 const user = useUserStore()
 
 onMounted(async () => {
-    await user.getUser()
-    user.getAutoopen()
-
     if (user.is_logged_in) {
         job.startMonitor(user)
     } else {

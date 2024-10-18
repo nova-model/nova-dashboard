@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("vuetify_config.json", views.get_vuetify_config),
     path("api/auth/user/", views.get_user),
+    path("api/galaxy/user_status/", views.galaxy_user_status),
     path("api/galaxy/launch/", views.galaxy_launch),
     path("api/galaxy/monitor/", views.galaxy_monitor),
     path("api/galaxy/stop/", views.galaxy_stop),

@@ -54,12 +54,8 @@ const job = useJobStore()
 const user = useUserStore()
 
 onMounted(async () => {
-    await user.getUser()
-    user.getAutoopen()
-
     if (user.is_logged_in) {
         job.startMonitor(user)
-
         const lastpath = window.localStorage.getItem("lastpath")
         const redirect = window.localStorage.getItem("redirect")
 

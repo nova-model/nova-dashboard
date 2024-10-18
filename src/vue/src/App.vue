@@ -48,7 +48,7 @@
                 </v-btn>
             </v-app-bar>
 
-            <RouterView />
+            <RouterView v-if="user.ready" />
 
             <v-footer class="justify-center my-0 px-1 py-0 text-center" app border>
                 <v-progress-circular
@@ -74,11 +74,27 @@
                     © 2024 ORNL
                 </a>
             </v-footer>
+            <v-dialog v-model="user.requires_galaxy_login" persistent width="400">
+                <v-card class="text-center">
+                    <v-card-text>
+                        In order to use this dashboard, you will need to complete a one-time login
+                        to Calvera. Please go to
+                        <a target="_blank" :href="galaxy_url">{{ galaxy_url }}</a> and log into
+                        Calvera using your {{ user.login_type }} credentials.
+                    </v-card-text>
+                    <v-card-actions class="justify-center">
+                        <v-btn width="200" margin="auto" @click="stopLoginPrompt"
+                            >Cancel Login</v-btn
+                        >
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-main>
     </v-app>
 </template>
 
 <script setup>
+import { onMounted } from "vue"
 import { storeToRefs } from "pinia"
 import { RouterView } from "vue-router"
 
@@ -90,4 +106,22 @@ const job = useJobStore()
 const { running } = storeToRefs(job)
 const user = useUserStore()
 const { autoopen, given_name, is_logged_in, ucams_auth_url, xcams_auth_url } = storeToRefs(user)
+const galaxy_url = import.meta.env.VITE_GALAXY_URL
+
+onMounted(async () => {
+    await user.getUser()
+    user.getAutoopen()
+
+    if (user.is_logged_in) {
+        await user.userStatus()
+
+        if (user.requires_galaxy_login) {
+            user.userMonitorLogin()
+        }
+    }
+})
+
+function stopLoginPrompt() {
+    user.resetUser()
+}
 </script>

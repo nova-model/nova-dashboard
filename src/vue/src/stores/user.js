@@ -7,7 +7,10 @@ export const useUserStore = defineStore("user", {
             given_name: null,
             is_logged_in: false,
             ucams_auth_url: "/",
-            xcams_auth_url: "/"
+            xcams_auth_url: "/",
+            requires_galaxy_login: false,
+            login_type: "",
+            ready: false
         }
     },
     actions: {
@@ -16,9 +19,32 @@ export const useUserStore = defineStore("user", {
             const data = await response.json()
 
             this.given_name = data.given_name
-            this.is_logged_in = data.is_logged_in
+            this.is_logged_in = data.is_logged_in && !this.requires_galaxy_login
             this.ucams_auth_url = data.ucams
             this.xcams_auth_url = data.xcams
+            this.ready = true
+        },
+        async userStatus() {
+            this.is_logged_in = false
+            const response = await fetch("/api/galaxy/user_status/")
+            const data = await response.json()
+
+            if (response.status == 450) {
+                this.requires_galaxy_login = true
+                this.login_type = data["auth_type"]
+            } else {
+                this.requires_galaxy_login = false
+                this.is_logged_in = true
+            }
+        },
+        userMonitorLogin() {
+            setInterval(() => {
+                if (this.requires_galaxy_login) {
+                    this.userStatus()
+                } else {
+                    return
+                }
+            }, 2000)
         },
         getAutoopen() {
             this.autoopen = window.localStorage.getItem("autoopen") === "true"
@@ -26,6 +52,15 @@ export const useUserStore = defineStore("user", {
         toggleAutoopen() {
             this.autoopen = !this.autoopen
             window.localStorage.setItem("autoopen", this.autoopen)
+        },
+        resetUser() {
+            this.autoopen = false
+            this.given_name = null
+            this.is_logged_in = false
+            this.ucams_auth_url = "/"
+            this.xcams_auth_url = "/"
+            this.requires_galaxy_login = false
+            this.login_type = ""
         }
     }
 })
