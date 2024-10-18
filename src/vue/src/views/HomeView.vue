@@ -33,18 +33,6 @@
             </v-card-text>
         </v-card>
     </v-container>
-    <v-dialog v-model="user.requires_galaxy_login" persistent width="400">
-        <v-card class="text-center">
-            <v-card-text>
-                In order to use this dashboard, you will need to complete a one-time login to
-                Calvera. Please go to <a target="_blank" :href="galaxy_url">{{ galaxy_url }}</a> and
-                log into Calvera using your {{ user.login_type }} credentials.
-            </v-card-text>
-            <v-card-actions class="justify-center">
-                <v-btn width="200" margin="auto" @click="stopLoginPrompt">Cancel Login</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
 </template>
 
 <script setup>
@@ -64,16 +52,9 @@ const props = defineProps({
 const router = useRouter()
 const job = useJobStore()
 const user = useUserStore()
-const galaxy_url = import.meta.env.VITE_GALAXY_URL;
 
 onMounted(async () => {
-    await user.getUser()
-    user.getAutoopen()
     if (user.is_logged_in) {
-        await user.userStatus()
-        if (user.requires_galaxy_login) {
-            user.userMonitorLogin();
-        }
         job.startMonitor(user)
         const lastpath = window.localStorage.getItem("lastpath")
         const redirect = window.localStorage.getItem("redirect")
@@ -90,8 +71,4 @@ onMounted(async () => {
         window.localStorage.setItem("redirect", true)
     }
 })
-
-function stopLoginPrompt() {
-    user.resetUser();
-}
 </script>
