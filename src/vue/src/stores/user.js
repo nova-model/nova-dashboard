@@ -10,6 +10,7 @@ export const useUserStore = defineStore("user", {
             xcams_auth_url: "/",
             requires_galaxy_login: false,
             login_type: "",
+            ready: false
         }
     },
     actions: {
@@ -21,6 +22,7 @@ export const useUserStore = defineStore("user", {
             this.is_logged_in = data.is_logged_in && !this.requires_galaxy_login
             this.ucams_auth_url = data.ucams
             this.xcams_auth_url = data.xcams
+            this.ready = true
         },
         async userStatus() {
             this.is_logged_in = false;

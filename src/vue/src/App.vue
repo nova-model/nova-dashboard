@@ -48,7 +48,7 @@
                 </v-btn>
             </v-app-bar>
 
-            <RouterView />
+            <RouterView v-if="user.ready" />
 
             <v-footer class="justify-center my-0 px-1 py-0 text-center" app border>
                 <v-progress-circular
@@ -109,8 +109,10 @@ const galaxy_url = import.meta.env.VITE_GALAXY_URL;
 onMounted(async () => {
     await user.getUser()
     user.getAutoopen()
+
     if (user.is_logged_in) {
         await user.userStatus()
+
         if (user.requires_galaxy_login) {
             user.userMonitorLogin();
         }
