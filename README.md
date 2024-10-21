@@ -22,7 +22,7 @@ pnpm i
 ## Run
 
 To configure and run the app properly, a `.env` file is needed in the top level directory of this repository.
-A sample file `.env.sample` is provided with all the configuration options available. Because your `.env` may contain
+A sample file `.env.sample` is provided that describes the available configuration options. Because your `.env` may contain
 secrets, make sure this does not get committed to the upstream repository. You can also set the environment variables
 manually in your environment or prefix them to your run command.
 
@@ -56,23 +56,6 @@ After that to start the application (from the root directory):
 ```bash
 poetry run ./manage.py migrate && poetry run ./manage.py runserver_plus --insecure 0.0.0.0:8080
 ````
-
-In order to use the authentication locally with a non-https server, you will need to set the following environment variable:
-```
-OAUTHLIB_INSECURE_TRANSPORT=1
-```
-This is not recommended unless you are developing locally.
-
-In order to properly get a Refresh Token if using Microsoft Azure as a provider, then you will also need to use the following:
-```
-OAUTHLIB_RELAX_TOKEN_SCOPE=1
-```
-
-In order to connect to Galaxy to launch a tool, you will also need to set the following environment variables in your
-`.env` file or in your environment:
-```
-GALAXY_URL=https://calvera-test.ornl.gov
-```
 
 ## Develop
 
