@@ -9,6 +9,7 @@ ENV POETRY_HOME=/poetry
 
 RUN apt update && apt upgrade -y && apt install -y \
     curl \
+    gettext-base \
     software-properties-common \
     nginx
 RUN add-apt-repository ppa:deadsnakes/ppa -y
@@ -52,7 +53,7 @@ RUN poetry run pip install gunicorn uvicorn-worker
 WORKDIR /opt/run/vue
 RUN pnpm build
 
-ADD scripts/nginx.conf /etc/nginx/nginx.conf
+ADD dockerfiles/nginx.conf.template /etc/nginx/nginx.conf.template
 ADD scripts/entrypoint.sh /opt/run/entrypoint.sh
 ADD manage.py /opt/run/django/manage.py
 
@@ -60,4 +61,6 @@ RUN mkdir -p /tmp
 RUN mkdir -p /run/nginx
 
 WORKDIR /opt/run/django
+# Squash useless warning about missing .env file
+RUN touch .env
 ENTRYPOINT ["bash", "/opt/run/entrypoint.sh"]

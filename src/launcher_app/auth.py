@@ -35,14 +35,14 @@ class AuthManager:
         self.ucams_session = OAuth2Session(
             settings.UCAMS_CLIENT_ID,
             auto_refresh_url=settings.UCAMS_TOKEN_URL,
-            redirect_uri=settings.UCAMS_REDIRECT_URL,
+            redirect_uri=settings.BASE_URL + f"/{settings.UCAMS_REDIRECT_PATH}",
             scope=settings.UCAMS_SCOPES.split(" "),
             token_updater=self.save_access_token,
         )
         self.xcams_session = OAuth2Session(
             settings.XCAMS_CLIENT_ID,
             auto_refresh_url=settings.XCAMS_TOKEN_URL,
-            redirect_uri=settings.XCAMS_REDIRECT_URL,
+            redirect_uri=settings.BASE_URL + f"/{settings.XCAMS_REDIRECT_PATH}",
             scope=settings.XCAMS_SCOPES.split(" "),
             token_updater=self.save_access_token,
         )

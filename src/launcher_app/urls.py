@@ -29,16 +29,11 @@ urlpatterns = [
     path("api/galaxy/launch/", views.galaxy_launch),
     path("api/galaxy/monitor/", views.galaxy_monitor),
     path("api/galaxy/stop/", views.galaxy_stop),
+    path(settings.UCAMS_REDIRECT_PATH, views.ucams_redirect, name="ucams_redirect"),
+    path(settings.XCAMS_REDIRECT_PATH, views.xcams_redirect, name="xcams_redirect"),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
-        path("redirect", views.ucams_redirect),
-        path("authnz/pingfed/callback", views.xcams_redirect),
         re_path("^.*/?$", views.client_proxy),
-    ]
-else:
-    urlpatterns += [
-        path("ucams", views.ucams_redirect),
-        path("redirect", views.xcams_redirect),
     ]
