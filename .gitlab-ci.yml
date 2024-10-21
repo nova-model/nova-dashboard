@@ -7,7 +7,6 @@ stages:
 variables:
   GIT_STRATEGY: clone
   IMAGE_NAME: ${NDIP_DOCKER_REPOSITORY}/${CI_PROJECT_PATH}
-  IMAGE_TAG: "0.1.0"
 
 before_script:
   - curl https://code.ornl.gov/rse-deployment/rse-sharables/raw/master/rse-bash-modules.sh -O
@@ -68,12 +67,13 @@ build-image:
     - docker push ${IMAGE_NAME}:bin-${CI_COMMIT_SHA}
     - docker tag image ${IMAGE_NAME}:latest
     - docker push ${IMAGE_NAME}:latest
+    - VERSION=$(cat pyproject.toml | grep "version =" | awk '{ print $3 }' | tr -d '"')
     - >
-      if ! docker pull ${IMAGE_NAME}:${IMAGE_TAG} || [ "$OVERWRITE_IMAGE" == "true" ]; then
-        docker tag image ${IMAGE_NAME}:${IMAGE_TAG}
-        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+      if ! docker pull ${IMAGE_NAME}:${VERSION} || [ "$OVERWRITE_IMAGE" == "true" ]; then
+        docker tag image ${IMAGE_NAME}:${VERSION}
+        docker push ${IMAGE_NAME}:${VERSION}
       else
-        echo tag ${IMAGE_TAG} already exists in ${NDIP_DOCKER_REPOSITORY}. Use OVERWRITE_IMAGE="true", delete image in the repository or change the tag
+        echo tag ${VERSION} already exists in ${NDIP_DOCKER_REPOSITORY}. Use OVERWRITE_IMAGE="true", delete image in the repository or change the tag
         exit 1
       fi
   tags:
