@@ -68,7 +68,7 @@ export const useJobStore = defineStore("job", {
                 let hasErrors = false
 
                 // Look for jobs that are running
-                data.jobs.forEach((job) => {
+                data.jobs.forEach(async (job) => {
                     if (!(job.tool_id in this.jobs)) {
                         this.jobs[job.tool_id] = {}
                     }
@@ -83,8 +83,14 @@ export const useJobStore = defineStore("job", {
                         }
                     }
 
-                    if (job.state === "running" && this.jobs[job.tool_id].state !== "stopping") {
-                        if (this.jobs[job.tool_id].state !== "launched" && job.url && autoopen) {
+                    if (
+                        job.state === "running" &&
+                        this.jobs[job.tool_id].state !== "stopping" &&
+                        this.jobs[job.tool_id].state !== "launched" &&
+                        job.url &&
+                        (await this.urlReady(job.url))
+                    ) {
+                        if (autoopen) {
                             window.open(job.url, "_blank")
                         }
 
@@ -121,6 +127,11 @@ export const useJobStore = defineStore("job", {
             setInterval(() => {
                 this.monitorJobs(user.autoopen, false)
             }, 2000)
+        },
+        async urlReady(url) {
+            const response = await fetch(url)
+
+            return response.status > 199 && response.status < 300
         }
     }
 })
