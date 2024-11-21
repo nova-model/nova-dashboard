@@ -11,7 +11,7 @@ export const useJobStore = defineStore("job", {
     },
     actions: {
         async launchJob(tool_id) {
-            this.jobs[tool_id] = { id: "", state: "launching", url: "" }
+            this.jobs[tool_id] = { id: "", start: Date.now(), state: "launching", url: "" }
 
             const response = await fetch("/api/galaxy/launch/", {
                 method: "POST",
@@ -70,7 +70,7 @@ export const useJobStore = defineStore("job", {
                 // Look for jobs that are running
                 data.jobs.forEach(async (job) => {
                     if (!(job.tool_id in this.jobs)) {
-                        this.jobs[job.tool_id] = {}
+                        this.jobs[job.tool_id] = { start: Date.now() }
                     }
 
                     if (job.state === "error") {
@@ -107,6 +107,15 @@ export const useJobStore = defineStore("job", {
                         !data.jobs.some((target) => target.job_id === job.id)
                     ) {
                         job.state = "stopped"
+                    } else if (
+                        !data.jobs.some((target) => target.job_id === job.id) &&
+                        Date.now() - job.start > 10000
+                    ) {
+                        // The job hasn't starting reporting its status in 10 seconds, something unexpected has happened.
+                        job.state = "error"
+
+                        hasErrors = true
+                        this.galaxy_error = `Galaxy error: Tool failed to launch properly for an unknown reason.`
                     }
                 })
 
