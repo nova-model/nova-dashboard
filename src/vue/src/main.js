@@ -11,12 +11,12 @@ import "vuetify/styles"
 import "@mdi/font/css/materialdesignicons.css"
 
 import App from "@/App.vue"
-import router from "@/router"
+import initRouter from "@/router"
 import "@/assets/core_style.scss"
 
 fetch("/vuetify_config.json")
     .then((response) => response.json())
-    .then((config) => {
+    .then(async (config) => {
         const app = createApp(App)
 
         app.use(createPinia()) // Pinia is a store library for Vue 3 that operates in a similar fashion to how we use view_models in Trame
@@ -31,7 +31,7 @@ fetch("/vuetify_config.json")
                 theme: config.theme
             })
         )
-        app.use(router)
+        app.use(await initRouter())
 
         app.mount("#app")
     })

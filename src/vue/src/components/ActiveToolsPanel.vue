@@ -27,7 +27,7 @@ import { storeToRefs } from "pinia"
 import { computed } from "vue"
 
 import ToolListItem from "@/components/ToolListItem.vue"
-import { tools } from "@/router"
+import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
 
 const job = useJobStore()
@@ -38,6 +38,8 @@ const job_list = computed(() => {
 })
 
 const tool_list = computed(() => {
+    const tools = getTools()
+
     // Returns all tools connected with a Galaxy job
     const running_tools = []
     Object.values(tools).forEach((tool_category) => {

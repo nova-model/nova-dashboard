@@ -7,12 +7,15 @@
             </v-card-title>
 
             <v-card-text>
-                <p class="text-center">
+                <p class="mb-4 text-center">
                     You can view the different categories of tools available below. Simply click on
                     a category to access its tools.
                 </p>
 
-                <v-container>
+                <v-banner v-if="job.galaxy_error" class="bg-error text-center">
+                    {{ job.galaxy_error }}
+                </v-banner>
+                <v-container v-else>
                     <v-row>
                         <v-col v-for="(tool, key) in props.tools" :key="key" cols="12" lg="4">
                             <v-card

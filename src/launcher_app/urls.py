@@ -29,6 +29,7 @@ urlpatterns = [
     path("api/galaxy/launch/", views.galaxy_launch),
     path("api/galaxy/monitor/", views.galaxy_monitor),
     path("api/galaxy/stop/", views.galaxy_stop),
+    path("api/galaxy/tools/", views.galaxy_tools),
     path(settings.UCAMS_REDIRECT_PATH, views.ucams_redirect, name="ucams_redirect"),
     path(settings.XCAMS_REDIRECT_PATH, views.xcams_redirect, name="xcams_redirect"),
 ]
