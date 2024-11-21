@@ -26,26 +26,8 @@ A sample file `.env.sample` is provided that describes the available configurati
 secrets, make sure this does not get committed to the upstream repository. You can also set the environment variables
 manually in your environment or prefix them to your run command.
 
-You will also need to provide a JSON file containing the configuration data for all the tools that can be launched from this
-application. The default file is located in `vue/public/tools.json`, and it should be modified in place if you need to make
-changes.
-
-```json
-{
-  "imaging": {
-    "name": "Imaging",
-    "description": "MARS, VENUS",
-    "tools": [
-      {
-        "id": "neutrons_ctr",
-        "name": "CT Reconstruction",
-        "description": "Computed Tomography Reconstruction in a Jupyter Notebook",
-        "max_instances": 1
-      }
-    ]
-  }
-}
-```
+When setting your environment variables, please download https://nova-test.ornl.gov/tools.json
+and ensure that `NOVA_TOOLS_PATH` points to it.
 
 After your environment is configured, run the following to start the client:
 ```bash

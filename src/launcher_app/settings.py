@@ -126,6 +126,9 @@ GALAXY_URL = os.environ["GALAXY_URL"]
 GALAXY_API_KEY_ENDPOINT = os.environ["GALAXY_API_KEY_ENDPOINT"]
 GALAXY_HISTORY_NAME = os.environ.get("GALAXY_HISTORY_NAME", "launcher_history")
 
+# NOVA tools.json location
+NOVA_TOOLS_PATH = os.environ["NOVA_TOOLS_PATH"]
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

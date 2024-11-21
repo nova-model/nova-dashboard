@@ -143,6 +143,16 @@ def galaxy_stop(request: HttpRequest) -> HttpResponse:
 
 
 @require_GET
+def galaxy_tools(request: HttpRequest) -> JsonResponse:
+    try:
+        galaxy_manager = GalaxyManager()
+
+        return JsonResponse({"tools": galaxy_manager.get_tools()})
+    except Exception as e:
+        return JsonResponse({"error": str(e), "tools": {}}, status=500)
+
+
+@require_GET
 def client_proxy(request: HttpRequest) -> StreamingHttpResponse:
     """Proxy requests to the VIte dev server during development.
 

@@ -7,10 +7,14 @@ The history name to use for all jobs can be controlled via the
 GALAXY_HISTORY_NAME setting.
 """
 
+import json
 import logging
+from typing import Any, Optional
 
 from bioblend.galaxy import GalaxyInstance
+from bs4 import BeautifulSoup
 from django.conf import settings
+from requests import get as requests_get
 
 from .auth import AuthManager
 
@@ -25,10 +29,11 @@ class GalaxyManager:
     authenticate with Galaxy to get the user's API key.
     """
 
-    def __init__(self, auth_manager: AuthManager):
+    def __init__(self, auth_manager: Optional[AuthManager] = None):
         """Init."""
-        self.auth_manager = auth_manager
-        self._connect_to_galaxy()
+        if auth_manager is not None:
+            self.auth_manager = auth_manager
+            self._connect_to_galaxy()
 
     def _connect_to_galaxy(self) -> None:
         try:
@@ -51,6 +56,38 @@ class GalaxyManager:
 
         result = self.galaxy_instance.histories.create_history(settings.GALAXY_HISTORY_NAME)
         return result["id"]
+
+    def _parse_tool_help(self, tool_help: str) -> str:
+        soup = BeautifulSoup(tool_help, "html.parser")
+
+        # Grab only the first line of the help text.
+        return soup.get_text().strip().split("\n")[0].strip()
+
+    def get_tools(self) -> dict[str, dict[str, Any]]:
+        # I retrieve the tools.json like this to avoid errors when running locally.
+        with open(settings.NOVA_TOOLS_PATH, "r") as file:
+            tool_json = json.load(file)
+        tool_details = {}
+
+        # Retrieve the tool name and help text from the Galaxy server.
+        galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
+        for galaxy_category in galaxy_tools:
+            for tool in galaxy_category.get("elems", []):
+                tool_details[tool["id"]] = tool
+
+        for key in tool_json:
+            category = tool_json[key]
+            for index, tool_id in enumerate(category.get("tools", [])):
+                if tool_id in tool_details:
+                    galaxy_tool = tool_details[tool_id]
+
+                    category["tools"][index] = {
+                        "id": tool_id,
+                        "name": galaxy_tool["name"],
+                        "description": self._parse_tool_help(galaxy_tool["help"]),
+                    }
+
+        return tool_json
 
     def launch_job(self, tool_id: str) -> None:
         self._connect_to_galaxy()

@@ -3,28 +3,41 @@
  */
 
 import { createRouter, createWebHistory } from "vue-router"
+
+import { useJobStore } from "../stores/job"
 import CategoryView from "../views/CategoryView.vue"
 import HomeView from "../views/HomeView.vue"
 
-const response = await fetch("/tools.json")
-export const tools = await response.json()
+let tools = {}
 
-const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL), // This is html5 mode for Vue Router
-    routes: [
-        {
-            path: "/",
-            name: "home",
-            component: HomeView,
-            props: { tools }
-        },
-        {
-            path: "/:category",
-            name: "category",
-            component: CategoryView,
-            props: { tools }
-        }
-    ]
-})
+export function getTools() {
+    return tools
+}
 
-export default router
+export default async function initRouter() {
+    const job = useJobStore()
+    const response = await fetch("/api/galaxy/tools/")
+    const toolResponse = await response.json()
+    if (response.status === 500) {
+        job.galaxy_error = toolResponse.error
+    }
+    tools = toolResponse.tools
+
+    return createRouter({
+        history: createWebHistory(import.meta.env.BASE_URL), // This is html5 mode for Vue Router
+        routes: [
+            {
+                path: "/",
+                name: "home",
+                component: HomeView,
+                props: { tools }
+            },
+            {
+                path: "/:category",
+                name: "category",
+                component: CategoryView,
+                props: { tools }
+            }
+        ]
+    })
+}
