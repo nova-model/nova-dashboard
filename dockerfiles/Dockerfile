@@ -51,6 +51,7 @@ RUN poetry run pip install gunicorn uvicorn-worker
 
 # Create static client build
 WORKDIR /opt/run/vue
+RUN cp /opt/run/django/pyproject.toml /opt/pyproject.toml
 RUN pnpm build
 
 ADD dockerfiles/nginx.conf.template /etc/nginx/nginx.conf.template

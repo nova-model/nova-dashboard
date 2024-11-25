@@ -3,9 +3,29 @@
     <v-app>
         <v-main>
             <v-app-bar>
-                <v-app-bar-title class="cursor-pointer" @click="$router.push('/')">
+                <v-app-bar-title class="cursor-pointer flex-0-1 mr-1" @click="$router.push('/')">
                     Neutrons Application Dashboard
                 </v-app-bar-title>
+
+                <v-btn size="x-small" icon>
+                    <v-icon>mdi-information-outline</v-icon>
+
+                    <v-menu activator="parent" :close-on-content-click="false" open-on-hover>
+                        <v-card width="600">
+                            <v-card-title class="mb-2 px-0">About This Dashboard</v-card-title>
+                            <v-card-text class="pa-0">
+                                <p class="mb-2">
+                                    This dashboard has been developed as a part of the NOVA LDRD
+                                    project. It is meant to serve as a way to launch and manage
+                                    interactive applications running in
+                                    <a :href="galaxy_url" target="_blank">Galaxy</a>.
+                                </p>
+
+                                <p>The dashboard is currently running version {{ version }}.</p>
+                            </v-card-text>
+                        </v-card>
+                    </v-menu>
+                </v-btn>
 
                 <v-spacer />
 
@@ -107,6 +127,7 @@ const { running } = storeToRefs(job)
 const user = useUserStore()
 const { autoopen, given_name, is_logged_in, ucams_auth_url, xcams_auth_url } = storeToRefs(user)
 const galaxy_url = import.meta.env.VITE_GALAXY_URL
+const version = import.meta.env.VITE_DASHBOARD_VERSION
 
 onMounted(async () => {
     await user.getUser()
