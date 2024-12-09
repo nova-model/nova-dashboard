@@ -109,9 +109,9 @@ export const useJobStore = defineStore("job", {
                         job.state = "stopped"
                     } else if (
                         !data.jobs.some((target) => target.job_id === job.id) &&
-                        Date.now() - job.start > 10000
+                        Date.now() - job.start > 60000
                     ) {
-                        // The job hasn't starting reporting its status in 10 seconds, something unexpected has happened.
+                        // The job hasn't starting reporting its status in one minute, something unexpected has happened.
                         job.state = "error"
 
                         hasErrors = true
