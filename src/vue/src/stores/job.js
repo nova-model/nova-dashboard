@@ -32,6 +32,9 @@ export const useJobStore = defineStore("job", {
                 const data = await response.json()
                 this.galaxy_error = `Galaxy error: ${data.error}`
             }
+
+            // This ensures we don't lose track of the job if the user refreshes immediately after launch
+            this.saveToLocalStorage()
         },
         async stopJob(tool_id) {
             this.jobs[tool_id].state = "stopping"
@@ -126,16 +129,35 @@ export const useJobStore = defineStore("job", {
                 this.galaxy_error = `Galaxy error: ${data.error}`
             }
 
+            this.saveToLocalStorage()
+
             // Turn on the spinner in the footer if any job is being started or stopped
             this.running = Object.values(this.jobs).some((job) =>
                 ["launching", "stopping"].includes(job.state)
             )
         },
         startMonitor(user) {
+            this.loadFromLocalStorage()
             this.monitorJobs(false, true)
             setInterval(() => {
                 this.monitorJobs(user.autoopen, false)
             }, 2000)
+        },
+        loadFromLocalStorage() {
+            const data = window.localStorage.getItem("job_state")
+            let job_states = {}
+            if (data !== null) {
+                job_states = JSON.parse(data)
+            }
+
+            for (let key in job_states) {
+                if (job_states[key].state !== "stopped") {
+                    this.jobs[key] = job_states[key]
+                }
+            }
+        },
+        saveToLocalStorage() {
+            window.localStorage.setItem("job_state", JSON.stringify(this.jobs))
         },
         async urlReady(url) {
             const response = await fetch(url)
