@@ -79,7 +79,7 @@
                     width="3"
                 />
                 <a
-                    href=""
+                    :href="galaxy_url"
                     class="text-grey-lighten-1 text-caption text-decoration-none"
                     target="_blank"
                 >
