@@ -11,7 +11,13 @@ export const useJobStore = defineStore("job", {
     },
     actions: {
         async launchJob(tool_id) {
-            this.jobs[tool_id] = { id: "", start: Date.now(), state: "launching", url: "" }
+            this.jobs[tool_id] = {
+                id: "",
+                start: Date.now(),
+                submitted: false,
+                state: "launching",
+                url: ""
+            }
 
             const response = await fetch("/api/galaxy/launch/", {
                 method: "POST",
@@ -26,6 +32,7 @@ export const useJobStore = defineStore("job", {
 
             if (response.status === 200) {
                 this.running = true
+                this.jobs[tool_id].submitted = true
             } else {
                 this.jobs[tool_id].state = "stopped"
 
@@ -73,7 +80,7 @@ export const useJobStore = defineStore("job", {
                 // Look for jobs that are running
                 data.jobs.forEach(async (job) => {
                     if (!(job.tool_id in this.jobs)) {
-                        this.jobs[job.tool_id] = { start: Date.now() }
+                        this.jobs[job.tool_id] = { start: Date.now(), submitted: false, url: "" }
                     }
 
                     if (job.state === "error") {
@@ -83,7 +90,12 @@ export const useJobStore = defineStore("job", {
                         if (this.jobs[job.tool_id].state !== "stopping") {
                             this.jobs[job.tool_id].id = job.job_id
                             this.jobs[job.tool_id].state = "error"
+                            this.jobs[job.tool_id].submitted = false
                         }
+                    }
+
+                    if (job.url) {
+                        this.jobs[job.tool_id].url = job.url
                     }
 
                     if (
@@ -99,7 +111,7 @@ export const useJobStore = defineStore("job", {
 
                         this.jobs[job.tool_id].id = job.job_id
                         this.jobs[job.tool_id].state = "launched"
-                        this.jobs[job.tool_id].url = job.url
+                        this.jobs[job.tool_id].submitted = false
                     }
                 })
 

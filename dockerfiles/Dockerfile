@@ -52,7 +52,6 @@ RUN poetry run pip install gunicorn uvicorn-worker
 # Create static client build
 WORKDIR /opt/run/vue
 RUN cp /opt/run/django/pyproject.toml /opt/pyproject.toml
-RUN pnpm build
 
 ADD dockerfiles/nginx.conf.template /etc/nginx/nginx.conf.template
 ADD scripts/entrypoint.sh /opt/run/entrypoint.sh
@@ -64,4 +63,5 @@ RUN mkdir -p /run/nginx
 WORKDIR /opt/run/django
 # Squash useless warning about missing .env file
 RUN touch .env
+
 ENTRYPOINT ["bash", "/opt/run/entrypoint.sh"]
