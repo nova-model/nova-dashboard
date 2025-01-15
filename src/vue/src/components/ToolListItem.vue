@@ -24,7 +24,13 @@
                         Stop
                         <v-icon>mdi-stop</v-icon>
                     </v-btn>
-                    <v-progress-circular v-if="isChanging(jobs, tool.id)" indeterminate />
+
+                    <ToolStatus
+                        v-if="isChanging(jobs, tool.id)"
+                        :state="jobs[tool.id]?.state"
+                        :submitted="jobs[tool.id]?.submitted"
+                        :url="jobs[tool.id]?.url"
+                    />
                 </div>
             </v-list-item-action>
         </template>
@@ -34,6 +40,7 @@
 <script setup>
 import { storeToRefs } from "pinia"
 
+import ToolStatus from "@/components/ToolStatus.vue"
 import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 

@@ -1,0 +1,70 @@
+<template>
+    <span>{{ status_text }}</span>
+    <v-menu v-if="is_slow" :close-on-content-click="false" open-on-hover>
+        <template v-slot:activator="{ props }">
+            <v-icon v-bind="props" class="mx-1" color="warning">mdi-information-outline</v-icon>
+        </template>
+
+        <v-card>
+            This is taking longer than usual. The pulsar node may be updating its Docker image to
+            the newest version of this application.
+        </v-card>
+    </v-menu>
+
+    <v-progress-circular indeterminate />
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from "vue"
+
+const props = defineProps({
+    state: {
+        required: true,
+        type: String
+    },
+    submitted: {
+        required: true,
+        type: Boolean
+    },
+    url: {
+        required: true,
+        type: String
+    }
+})
+
+const galaxy_url = import.meta.env.VITE_GALAXY_URL
+const status_text = computed(() => {
+    if (props.state === "stopping") {
+        return `Stopping job on ${galaxy_url}`
+    }
+
+    if (props.url) {
+        is_slow.value = false
+
+        return `Waiting for application to respond`
+    }
+
+    if (props.submitted) {
+        return `Launching application Docker container`
+    }
+
+    return `Submitting job to ${galaxy_url}`
+})
+
+const is_slow = ref(false)
+onMounted(() => {
+    // Wait until the job has been fully submitted to Galaxy before counting the time it takes to launch.
+    const interval = setInterval(() => {
+        if (props.submitted) {
+            // Give Galaxy 10 seconds to launch the Docker container before reporting it as slow to respond.
+            setTimeout(() => {
+                // If there is a URL, then the container started during this timeout.
+                if (!props.url) {
+                    is_slow.value = true
+                }
+            }, 10000)
+            clearInterval(interval)
+        }
+    }, 100)
+})
+</script>
