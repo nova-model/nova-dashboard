@@ -59,6 +59,7 @@ const user = useUserStore()
 onMounted(async () => {
     if (user.is_logged_in) {
         job.startMonitor(user)
+
         const lastpath = window.localStorage.getItem("lastpath")
         const redirect = window.localStorage.getItem("redirect")
 
