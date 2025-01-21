@@ -31,41 +31,46 @@
 
                 <ActiveToolsPanel class="mr-4" />
 
-                <span v-if="is_logged_in" class="pr-2 text-button">Welcome, {{ given_name }}</span>
-                <v-btn v-else>
-                    Sign In
+                <div v-if="!checking_galaxy_login">
+                    <span v-if="is_logged_in" class="pr-2 text-button">
+                        Welcome, {{ given_name }}
+                    </span>
+                    <v-btn v-else-if="!route.path.startsWith('/launch')">
+                        Sign In
 
-                    <v-menu activator="parent">
-                        <v-list>
-                            <v-list-item :href="ucams_auth_url">via UCAMS</v-list-item>
-                            <v-list-item :href="xcams_auth_url">via XCAMS</v-list-item>
-                        </v-list>
-                    </v-menu>
-                </v-btn>
+                        <v-menu activator="parent">
+                            <v-list>
+                                <v-list-item :href="ucams_auth_url">via UCAMS</v-list-item>
+                                <v-list-item :href="xcams_auth_url">via XCAMS</v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </v-btn>
 
-                <v-btn v-if="is_logged_in" icon>
-                    <v-icon>mdi-cogs</v-icon>
+                    <v-btn v-if="is_logged_in" icon>
+                        <v-icon>mdi-cogs</v-icon>
 
-                    <v-menu activator="parent" :close-on-content-click="false">
-                        <v-card width="400">
-                            <v-card-title>Preferences</v-card-title>
+                        <v-menu activator="parent" :close-on-content-click="false">
+                            <v-card width="400">
+                                <v-card-title>Preferences</v-card-title>
 
-                            <v-card-text>
-                                <v-switch
-                                    v-model="autoopen"
-                                    label="Automatically Open Tools in a New Tab After Launch"
-                                    hide-details
-                                    @click="user.toggleAutoopen()"
-                                />
-                                <p class="text-caption">
-                                    If tools don't automatically open after launching, then you may
-                                    need to allow pop-ups on this site in your browser or browser
-                                    extension settings.
-                                </p>
-                            </v-card-text>
-                        </v-card>
-                    </v-menu>
-                </v-btn>
+                                <v-card-text>
+                                    <v-switch
+                                        v-model="autoopen"
+                                        label="Automatically Open Tools in a New Tab After Launch"
+                                        hide-details
+                                        @click="user.toggleAutoopen()"
+                                    />
+                                    <p class="text-caption">
+                                        If tools don't automatically open after launching, then you
+                                        may need to allow pop-ups on this site in your browser or
+                                        browser extension settings.
+                                    </p>
+                                </v-card-text>
+                            </v-card>
+                        </v-menu>
+                    </v-btn>
+                </div>
+                <v-progress-circular v-else class="mr-4" indeterminate />
             </v-app-bar>
 
             <RouterView v-if="user.ready" />
@@ -116,7 +121,7 @@
 <script setup>
 import { onMounted } from "vue"
 import { storeToRefs } from "pinia"
-import { RouterView } from "vue-router"
+import { RouterView, useRoute } from "vue-router"
 
 import ActiveToolsPanel from "@/components/ActiveToolsPanel.vue"
 import { useJobStore } from "@/stores/job"
@@ -125,7 +130,15 @@ import { useUserStore } from "@/stores/user"
 const job = useJobStore()
 const { running } = storeToRefs(job)
 const user = useUserStore()
-const { autoopen, given_name, is_logged_in, ucams_auth_url, xcams_auth_url } = storeToRefs(user)
+const {
+    autoopen,
+    checking_galaxy_login,
+    given_name,
+    is_logged_in,
+    ucams_auth_url,
+    xcams_auth_url
+} = storeToRefs(user)
+const route = useRoute()
 const galaxy_url = import.meta.env.VITE_GALAXY_URL
 const version = import.meta.env.VITE_DASHBOARD_VERSION
 

@@ -45,10 +45,6 @@ import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 
 const props = defineProps({
-    index: {
-        required: true,
-        type: Number
-    },
     tool: {
         required: true,
         type: Object

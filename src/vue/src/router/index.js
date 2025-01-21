@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from "vue-router"
 
 import { useJobStore } from "../stores/job"
 import CategoryView from "../views/CategoryView.vue"
+import LaunchView from "../views/LaunchView.vue"
 import HomeView from "../views/HomeView.vue"
 
 let tools = {}
@@ -36,6 +37,12 @@ export default async function initRouter() {
                 path: "/:category",
                 name: "category",
                 component: CategoryView,
+                props: { tools }
+            },
+            {
+                path: "/launch/:tool",
+                name: "launch",
+                component: LaunchView,
                 props: { tools }
             }
         ]

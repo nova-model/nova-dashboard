@@ -4,6 +4,7 @@ export const useUserStore = defineStore("user", {
     state: () => {
         return {
             autoopen: false, // if true, tools will open in a new tab once they've successfully launched
+            checking_galaxy_login: false,
             given_name: null,
             is_logged_in: false,
             ucams_auth_url: "/",
@@ -25,7 +26,9 @@ export const useUserStore = defineStore("user", {
             this.ready = true
         },
         async userStatus() {
+            this.checking_galaxy_login = true
             this.is_logged_in = false
+
             const response = await fetch("/api/galaxy/user_status/")
             const data = await response.json()
 
@@ -35,7 +38,12 @@ export const useUserStore = defineStore("user", {
             } else {
                 this.requires_galaxy_login = false
                 this.is_logged_in = true
+
+                window.localStorage.removeItem("lastpath")
+                window.localStorage.removeItem("redirect", false)
             }
+
+            this.checking_galaxy_login = false
         },
         userMonitorLogin() {
             setInterval(() => {

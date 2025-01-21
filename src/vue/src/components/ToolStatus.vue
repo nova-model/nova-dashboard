@@ -11,7 +11,7 @@
         </v-card>
     </v-menu>
 
-    <v-progress-circular indeterminate />
+    <v-progress-circular class="ml-1" indeterminate />
 </template>
 
 <script setup>

@@ -148,18 +148,29 @@ export const useJobStore = defineStore("job", {
                 ["launching", "stopping"].includes(job.state)
             )
         },
-        startMonitor(user) {
+        startMonitor(user, callback) {
             this.loadFromLocalStorage()
             this.monitorJobs(false, true)
             setInterval(() => {
                 this.monitorJobs(user.autoopen, false)
+
+                if (callback !== undefined) {
+                    callback()
+                }
             }, 2000)
         },
         loadFromLocalStorage() {
             const data = window.localStorage.getItem("job_state")
+            const timeout = 5000
             let job_states = {}
             if (data !== null) {
                 job_states = JSON.parse(data)
+            }
+
+            // If the job state is older than timeout milliseconds, then we should not load the outdated state.
+            if ("timestamp" in job_states && Date.now() - job_states.timestamp > timeout) {
+                window.localStorage.removeItem("job_state")
+                return
             }
 
             for (let key in job_states) {
@@ -169,6 +180,7 @@ export const useJobStore = defineStore("job", {
             }
         },
         saveToLocalStorage() {
+            this.jobs["timestamp"] = Date.now()
             window.localStorage.setItem("job_state", JSON.stringify(this.jobs))
         },
         async urlReady(url) {
