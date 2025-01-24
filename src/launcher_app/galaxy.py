@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from nova.galaxy import Nova, Parameters, Tool
+from nova.galaxy import Nova, Parameters, Tool, WorkState
 from requests import get as requests_get
 
 from .auth import AuthManager
@@ -40,7 +40,8 @@ class GalaxyManager:
                 store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
                 store.persist()
                 for tool in store.recover_tools():
-                    self.tools[tool.get_uid()] = tool
+                    if tool.get_status() == WorkState.RUNNING:
+                        self.tools[tool.get_uid()] = tool
 
     def _connect_to_galaxy(self) -> None:
         try:
