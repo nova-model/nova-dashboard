@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "launcher-app"
-version = "0.5.0"
+version = "0.6.0"
 description = ""
 authors = ["Yakubov, Sergey <yakubovs@ornl.gov>", "Cage, Gregory <cagege@ornl.gov>", "Duggan, John <dugganjw@ornl.gov>"]
 readme = "README.md"
@@ -21,6 +21,7 @@ requests = "^2.32.3"
 requests-oauthlib = "^2.0.0"
 django-stubs = "^5.0.4"
 trame-facade = "^0.3.2"
+nova-galaxy = "^0.6.1"
 
 [[tool.poetry.source]]
 name = "trame-facade"
