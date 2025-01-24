@@ -117,6 +117,11 @@ export const useJobStore = defineStore("job", {
 
                 // Look for jobs that have stopped running
                 Object.values(this.jobs).forEach((job) => {
+                    // The timestamp key in this.jobs is a Number and needs to be skipped here.
+                    if (typeof job !== "object") {
+                        return
+                    }
+
                     if (
                         job.state !== "launching" &&
                         !data.jobs.some((target) => target.job_id === job.id)
