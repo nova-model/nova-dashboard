@@ -10,12 +10,7 @@
                 <v-card-title>Active Tools</v-card-title>
 
                 <v-list>
-                    <ToolListItem
-                        v-for="(tool, index) in tool_list"
-                        :key="index"
-                        :index="index"
-                        :tool="tool"
-                    />
+                    <ToolListItem v-for="(tool, index) in tool_list" :key="index" :tool="tool" />
                 </v-list>
             </v-card>
         </v-menu>
