@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from nova.galaxy import Nova, Parameters, Tool, WorkState
+from nova.galaxy import Connection, Parameters, Tool, WorkState
 from requests import get as requests_get
 
 from .auth import AuthManager
@@ -33,19 +33,14 @@ class GalaxyManager:
         """Init."""
         if auth_manager is not None:
             self.auth_manager = auth_manager
-            self.nova = Nova(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
+            self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
             self._connect_to_galaxy()
             self.tools: Dict[str, Tool] = {}
-            with self.nova.connect() as connection:
-                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-                store.persist()
-                for tool in store.recover_tools():
-                    if tool.get_status() == WorkState.RUNNING:
-                        self.tools[tool.get_uid()] = tool
+            self._recover_tools = True
 
     def _connect_to_galaxy(self) -> None:
         try:
-            with self.nova.connect() as connection:
+            with self.connection.connect() as connection:
                 store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
                 store.persist()
         except Exception as e:
@@ -89,24 +84,31 @@ class GalaxyManager:
 
     def launch_job(self, tool_id: str) -> None:
         self._connect_to_galaxy()
-        with self.nova.connect() as connection:
+        with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
             tool = Tool(tool_id)
-            tool.run(store=store, params=Parameters(), wait=False)
+            tool.run(data_store=store, params=Parameters(), wait=False)
             self.tools[tool.get_uid()] = tool
 
     def monitor_jobs(self) -> list:
         self._connect_to_galaxy()
         status_list = []
-        with self.nova.connect():
+        with self.connection.connect() as connection:
+            if self._recover_tools:
+                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+                store.persist()
+                for tool in store.recover_tools():
+                    if tool.get_status() == WorkState.RUNNING:
+                        self.tools[tool.get_uid()] = tool
+                self._recover_tools = False
             for tool in self.tools.keys():
                 try:
                     status_list.append(
                         {
                             "job_id": self.tools[tool].get_uid(),
                             "tool_id": self.tools[tool].id,
-                            "state": self.tools[tool].get_status(),
+                            "state": self.tools[tool].get_status().value,
                             "url": self.tools[tool].get_url(),
                         }
                     )
@@ -116,6 +118,6 @@ class GalaxyManager:
 
     def stop_job(self, tool_uid: str) -> None:
         self._connect_to_galaxy()
-        with self.nova.connect():
+        with self.connection.connect():
             self.tools[tool_uid].cancel()
             self.tools.pop(tool_uid)
