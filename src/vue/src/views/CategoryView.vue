@@ -31,7 +31,7 @@
                     </v-list-subheader>
 
                     <ToolListItem
-                        v-for="tool in tools[route.params.category].tools"
+                        v-for="(tool, index) in tools[route.params.category].tools"
                         :key="index"
                         :tool="tool"
                         class="pa-2"
