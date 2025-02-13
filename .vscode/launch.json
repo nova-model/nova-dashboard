@@ -1,14 +1,23 @@
 {
     "configurations":[
         {
-            "name": "Launch",
+            "name": "Launch (Hotload)",
             "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/manage.py",
             "args": ["runserver_plus", "--insecure", "0.0.0.0:8080"],
-            "preLaunchTask": "vite",
+            "preLaunchTask": "vite hotload",
             "postDebugTask": "stop vite"
+        },
+        {
+            "name": "Launch (Build)",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/manage.py",
+            "args": ["runserver_plus", "--insecure", "0.0.0.0:8080"],
+            "preLaunchTask": "vite build"
         }
     ]
 }
