@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "vite",
+            "label": "vite hotload",
             "type": "shell",
             "command": "pnpm",
             "args": ["run", "dev", "--host", "--port", "5173"],
@@ -21,6 +21,55 @@
                     "activeOnStart": true,
                     "beginsPattern": "vite",
                     "endsPattern": "ready"
+                }
+            },
+            "isBackground": true
+        },
+        {
+            "label": "vite build",
+            "dependsOn": ["build"],
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["preview", "--host", "--port", "5173"],
+            "options": {
+                "cwd": "${workspaceFolder}/src/vue"
+            },
+            "problemMatcher": {
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "preview",
+                    "endsPattern": "Local"
+                }
+            },
+            "isBackground": true
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["build", "--watch"],
+            "options": {
+                "cwd": "${workspaceFolder}/src/vue"
+            },
+            "problemMatcher": {
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "build started",
+                    "endsPattern": "built in"
                 }
             },
             "isBackground": true
