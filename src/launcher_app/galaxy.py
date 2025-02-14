@@ -118,6 +118,13 @@ class GalaxyManager:
 
     def stop_job(self, tool_uid: str) -> None:
         self._connect_to_galaxy()
-        with self.connection.connect():
-            self.tools[tool_uid].cancel()
-            self.tools.pop(tool_uid)
+        with self.connection.connect() as connection:
+            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+            store.persist()
+            tool = Tool("")
+            tool.assign_id(new_id=tool_uid, data_store=store)
+            tool.cancel()
+            try:
+                self.tools.pop(tool_uid)
+            except Exception:
+                logger.warning(f"Could not remove id from tool list: {tool_uid}. Job does not exist or has stopped.")
