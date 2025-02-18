@@ -9,11 +9,11 @@ GALAXY_HISTORY_NAME setting.
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
-from bioblend.galaxy import GalaxyInstance
 from bs4 import BeautifulSoup
 from django.conf import settings
+from nova.galaxy import Connection, Parameters, Tool, WorkState
 from requests import get as requests_get
 
 from .auth import AuthManager
@@ -33,29 +33,27 @@ class GalaxyManager:
         """Init."""
         if auth_manager is not None:
             self.auth_manager = auth_manager
+            self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
             self._connect_to_galaxy()
+            self.tools: Dict[str, Tool] = {}
+            with self.connection.connect() as connection:
+                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+                store.persist()
+                for tool in store.recover_tools():
+                    if tool.get_status() == WorkState.RUNNING:
+                        self.tools[tool.get_uid()] = tool
 
     def _connect_to_galaxy(self) -> None:
         try:
-            self.galaxy_instance = GalaxyInstance(
-                url=settings.GALAXY_URL,
-                key=self.auth_manager.get_galaxy_api_key(),
-            )
+            with self.connection.connect() as connection:
+                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+                store.persist()
         except Exception as e:
             logger.error(f"Failed to connect to Galaxy: {e}")
 
             self.auth_manager.delete_galaxy_api_key()
-            self.galaxy_instance = None  # type: ignore
 
             raise Exception(f"Failed to connect to Galaxy: {e}") from None
-
-    def _get_history_id(self) -> str:
-        histories = self.galaxy_instance.histories.get_histories(name=settings.GALAXY_HISTORY_NAME)
-        if len(histories) > 0:
-            return histories[0]["id"]
-
-        result = self.galaxy_instance.histories.create_history(settings.GALAXY_HISTORY_NAME)
-        return result["id"]
 
     def _parse_tool_help(self, tool_help: str) -> str:
         soup = BeautifulSoup(tool_help, "html.parser")
@@ -90,46 +88,38 @@ class GalaxyManager:
         return tool_json
 
     def launch_job(self, tool_id: str) -> None:
-        self._connect_to_galaxy()
-        self.galaxy_instance.tools.run_tool(self._get_history_id(), tool_id, {})
+        with self.connection.connect() as connection:
+            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+            store.persist()
+            tool = Tool(tool_id)
+            tool.run(data_store=store, params=Parameters(), wait=False)
+            self.tools[tool.get_uid()] = tool
 
     def monitor_jobs(self) -> list:
-        self._connect_to_galaxy()
+        status_list = []
+        with self.connection.connect():
+            for tool in self.tools.keys():
+                try:
+                    status_list.append(
+                        {
+                            "job_id": self.tools[tool].get_uid(),
+                            "tool_id": self.tools[tool].id,
+                            "state": self.tools[tool].get_status().value,
+                            "url": self.tools[tool].get_url(),
+                        }
+                    )
+                except Exception:  # TODO: Might try to handle these better
+                    continue
+        return status_list
 
-        history_contents = self.galaxy_instance.histories.show_history(
-            self._get_history_id(), contents=True, deleted=False, details="all"
-        )
-        job_list = []
-        entry_points = self.galaxy_instance.make_get_request(f"{settings.GALAXY_URL}/api/entry_points?running=true")
-        for dataset in history_contents:
+    def stop_job(self, tool_uid: str) -> None:
+        with self.connection.connect() as connection:
+            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+            store.persist()
+            tool = Tool("")
+            tool.assign_id(new_id=tool_uid, data_store=store)
+            tool.cancel()
             try:
-                # dataset does not contain tool_id
-                job_id = dataset["creating_job"]
-                job_info = self.galaxy_instance.jobs.show_job(job_id)
-                if job_info["state"] == "queued" or job_info["state"] == "running" or job_info["state"] == "error":
-                    # Search entry points json for correct job listing and try
-                    # to get the target url.
-                    target = None
-                    for ep in entry_points.json():
-                        if ep["job_id"] == job_id:
-                            target = ep.get("target", None)
-                    if target:
-                        target = f"{settings.GALAXY_URL}{target}"
-
-                        job_list.append(
-                            {
-                                "job_id": job_id,
-                                "tool_id": job_info["tool_id"],
-                                "state": job_info["state"],
-                                "url": target,
-                            }
-                        )
+                self.tools.pop(tool_uid)
             except Exception:
-                # Some unusual datasets will cause issues. However, We still
-                # want to check other datasets.
-                continue
-        return job_list
-
-    def stop_job(self, job_id: str) -> None:
-        self._connect_to_galaxy()
-        self.galaxy_instance.jobs.cancel_job(job_id)
+                logger.warning(f"Could not remove id from tool list: {tool_uid}. Job does not exist or has stopped.")
