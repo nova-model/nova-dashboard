@@ -36,7 +36,12 @@ class GalaxyManager:
             self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
             self._connect_to_galaxy()
             self.tools: Dict[str, Tool] = {}
-            self._recover_tools = True
+            with self.connection.connect() as connection:
+                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+                store.persist()
+                for tool in store.recover_tools():
+                    if tool.get_status() == WorkState.RUNNING:
+                        self.tools[tool.get_uid()] = tool
 
     def _connect_to_galaxy(self) -> None:
         try:
@@ -83,7 +88,6 @@ class GalaxyManager:
         return tool_json
 
     def launch_job(self, tool_id: str) -> None:
-        self._connect_to_galaxy()
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
@@ -92,16 +96,8 @@ class GalaxyManager:
             self.tools[tool.get_uid()] = tool
 
     def monitor_jobs(self) -> list:
-        self._connect_to_galaxy()
         status_list = []
-        with self.connection.connect() as connection:
-            if self._recover_tools:
-                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-                store.persist()
-                for tool in store.recover_tools():
-                    if tool.get_status() == WorkState.RUNNING:
-                        self.tools[tool.get_uid()] = tool
-                self._recover_tools = False
+        with self.connection.connect():
             for tool in self.tools.keys():
                 try:
                     status_list.append(
@@ -117,7 +113,6 @@ class GalaxyManager:
         return status_list
 
     def stop_job(self, tool_uid: str) -> None:
-        self._connect_to_galaxy()
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
