@@ -12,22 +12,28 @@
                 {{ tools[route.params.category].name }} Applications
             </v-card-title>
             <v-card-subtitle>
-                The below tools are currently supported for running on Calvera. You must be signed
-                in to launch them. You may sign in using the button in the top right corner of this
-                page.
+                <p class="mb-2">
+                    The below tools are currently supported for running on Calvera. You must be
+                    signed in to launch them. You may sign in using the button in the top right
+                    corner of this page.
+                </p>
+                <p>
+                    Tools that can be used by all techniques can be found by clicking the tool icon
+                    at the top left of this page.
+                </p>
             </v-card-subtitle>
 
             <v-card-text>
-                <v-banner v-if="galaxy_error" class="bg-error text-center">{{
-                    galaxy_error
-                }}</v-banner>
+                <v-banner v-if="galaxy_error" class="bg-error text-center">
+                    {{ galaxy_error }}
+                </v-banner>
 
                 <v-list>
                     <v-list-subheader v-if="tools[route.params.category].tools.length > 0">
-                        Available Tools
+                        {{ tools[route.params.category].name }} Tools
                     </v-list-subheader>
                     <v-list-subheader v-else class="justify-center">
-                        Stay tuned, we will be adding tools here soon!
+                        Stay tuned, we will be adding technique-specific tools here soon!
                     </v-list-subheader>
 
                     <ToolListItem
@@ -72,9 +78,3 @@ onMounted(async () => {
     }
 })
 </script>
-
-<style scoped>
-.v-breadcrumbs {
-    top: 64px;
-}
-</style>

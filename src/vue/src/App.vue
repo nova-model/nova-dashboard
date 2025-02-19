@@ -73,6 +73,19 @@
                 <v-progress-circular v-else class="mr-4" indeterminate />
             </v-app-bar>
 
+            <v-fab
+                v-if="genericTools.length > 0 && !drawer"
+                location="right center"
+                app
+                icon
+                @click="toggleDrawer"
+            >
+                <v-icon>mdi-tools</v-icon>
+            </v-fab>
+            <v-navigation-drawer v-model="drawer" location="right" width="450" app temporary>
+                <ToolDrawer :tools="genericTools" />
+            </v-navigation-drawer>
+
             <RouterView v-if="user.ready" />
 
             <v-footer class="justify-center my-0 px-1 py-0 text-center" app border>
@@ -119,14 +132,17 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { storeToRefs } from "pinia"
 import { RouterView, useRoute } from "vue-router"
 
 import ActiveToolsPanel from "@/components/ActiveToolsPanel.vue"
+import ToolDrawer from "@/components/ToolDrawer.vue"
+import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 
+const tools = getTools()
 const job = useJobStore()
 const { running } = storeToRefs(job)
 const user = useUserStore()
@@ -141,6 +157,17 @@ const {
 const route = useRoute()
 const galaxy_url = import.meta.env.VITE_GALAXY_URL
 const version = import.meta.env.VITE_DASHBOARD_VERSION
+const drawer = ref(false)
+
+const genericTools = computed(() => {
+    const tools = getTools()
+
+    if (tools?.generic?.tools) {
+        return tools.generic.tools
+    }
+
+    return []
+})
 
 onMounted(async () => {
     await user.getUser()
@@ -154,6 +181,10 @@ onMounted(async () => {
         }
     }
 })
+
+function toggleDrawer() {
+    drawer.value = !drawer.value
+}
 
 function stopLoginPrompt() {
     user.resetUser()
