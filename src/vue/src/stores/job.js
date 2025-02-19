@@ -4,9 +4,13 @@ import { defineStore } from "pinia"
 export const useJobStore = defineStore("job", {
     state: () => {
         return {
+            autoopen: false,
+            callback: null,
             galaxy_error: "",
             jobs: {},
-            running: false
+            running: false,
+            timeout: 1000,
+            monitor_task: null
         }
     },
     actions: {
@@ -33,15 +37,13 @@ export const useJobStore = defineStore("job", {
             if (response.status === 200) {
                 this.running = true
                 this.jobs[tool_id].submitted = true
+                this.restartMonitor()
             } else {
                 this.jobs[tool_id].state = "stopped"
 
                 const data = await response.json()
                 this.galaxy_error = `Galaxy error: ${data.error}`
             }
-
-            // This ensures we don't lose track of the job if the user refreshes immediately after launch
-            this.saveToLocalStorage()
         },
         async stopJob(tool_id) {
             this.jobs[tool_id].state = "stopping"
@@ -59,6 +61,7 @@ export const useJobStore = defineStore("job", {
 
             if (response.status === 200) {
                 this.running = true
+                this.restartMonitor()
             } else {
                 this.jobs[tool_id].state = "launched"
 
@@ -66,11 +69,7 @@ export const useJobStore = defineStore("job", {
                 this.galaxy_error = `Galaxy error: ${data.error}`
             }
         },
-        async monitorJobs(autoopen, force) {
-            if (!force && !this.running) {
-                return
-            }
-
+        async monitorJobs() {
             const response = await fetch("/api/galaxy/monitor/")
             const data = await response.json()
 
@@ -105,7 +104,7 @@ export const useJobStore = defineStore("job", {
                         job.url &&
                         (await this.urlReady(job.url))
                     ) {
-                        if (autoopen) {
+                        if (this.autoopen) {
                             window.open(job.url, "_blank")
                         }
 
@@ -146,52 +145,45 @@ export const useJobStore = defineStore("job", {
                 this.galaxy_error = `Galaxy error: ${data.error}`
             }
 
-            this.saveToLocalStorage()
-
             // Turn on the spinner in the footer if any job is being started or stopped
             this.running = Object.values(this.jobs).some((job) =>
                 ["launching", "stopping"].includes(job.state)
             )
+
+            if (this.callback !== undefined && this.callback !== null) {
+                this.callback()
+            }
+
+            // Monitor quickly if a job is starting or stopping
+            // Delay the monitor if nothing is starting or stopping to avoid spamming the server
+            if (this.running) {
+                this.timeout = 1000
+            } else if (this.timeout < 15000) {
+                this.timeout += 1000
+            }
+
+            if (this.monitor_task) {
+                window.clearTimeout(this.monitor_task)
+            }
+            this.monitor_task = setTimeout(this.monitorJobs, this.timeout)
+        },
+        restartMonitor() {
+            this.timeout = 1000
+            this.monitorJobs()
         },
         startMonitor(user, callback) {
-            this.loadFromLocalStorage()
-            this.monitorJobs(false, true)
-            setInterval(() => {
-                this.monitorJobs(user.autoopen, false)
-
-                if (callback !== undefined) {
-                    callback()
-                }
-            }, 2000)
-        },
-        loadFromLocalStorage() {
-            const data = window.localStorage.getItem("job_state")
-            const timeout = 5000
-            let job_states = {}
-            if (data !== null) {
-                job_states = JSON.parse(data)
-            }
-
-            // If the job state is older than timeout milliseconds, then we should not load the outdated state.
-            if ("timestamp" in job_states && Date.now() - job_states.timestamp > timeout) {
-                window.localStorage.removeItem("job_state")
-                return
-            }
-
-            for (let key in job_states) {
-                if (job_states[key].state !== "stopped") {
-                    this.jobs[key] = job_states[key]
-                }
-            }
-        },
-        saveToLocalStorage() {
-            this.jobs["timestamp"] = Date.now()
-            window.localStorage.setItem("job_state", JSON.stringify(this.jobs))
+            this.autoopen = user.autoopen
+            this.callback = callback
+            this.monitorJobs()
         },
         async urlReady(url) {
-            const response = await fetch(url)
+            try {
+                const response = await fetch(url)
 
-            return response.status > 199 && response.status < 300
+                return response.status > 199 && response.status < 300
+            } catch {
+                return false
+            }
         }
     }
 })

@@ -38,8 +38,9 @@ http {
 
         location = / {
             root /opt/run/vue/dist;
-            add_header Cache-Control no-cache;
-            expires 0;
+            add_header Cache-Control 'no-cache, no-store';
+            add_header Vary *;
+            expires -1;
             try_files /index.html =404;
         }
 
@@ -50,8 +51,9 @@ http {
 
         location @index {
             root /opt/run/vue/dist;
-            add_header Cache-Control no-cache;
-            expires 0;
+            add_header Cache-Control 'no-cache, no-store';
+            add_header Vary *;
+            expires -1;
             try_files /index.html =404;
         }
     }
