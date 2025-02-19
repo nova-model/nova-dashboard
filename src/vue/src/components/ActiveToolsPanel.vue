@@ -1,16 +1,16 @@
 <!-- Creates a popover VMenu for viewing all currently active tools in Galaxy. -->
 <template>
-    <v-btn v-show="tool_list.length > 0" icon>
-        <v-badge :content="tool_list.length">
+    <v-btn v-show="toolList.length > 0" icon>
+        <v-badge :content="toolList.length">
             <v-icon>mdi-laptop</v-icon>
         </v-badge>
 
-        <v-menu v-if="tool_list.length > 0" activator="parent" :close-on-content-click="false">
+        <v-menu v-if="toolList.length > 0" activator="parent" :close-on-content-click="false">
             <v-card>
                 <v-card-title>Active Tools</v-card-title>
 
                 <v-list>
-                    <ToolListItem v-for="(tool, index) in tool_list" :key="index" :tool="tool" />
+                    <ToolListItem v-for="(tool, index) in toolList" :key="index" :tool="tool" />
                 </v-list>
             </v-card>
         </v-menu>
@@ -28,26 +28,30 @@ import { useJobStore } from "@/stores/job"
 const job = useJobStore()
 const { jobs } = storeToRefs(job)
 
-const job_list = computed(() => {
+const jobList = computed(() => {
     return Object.entries(jobs.value)
 })
 
-const tool_list = computed(() => {
+const toolList = computed(() => {
     const tools = getTools()
 
     // Returns all tools connected with a Galaxy job
-    const running_tools = []
+    const runningTools = []
     Object.values(tools).forEach((tool_category) => {
         tool_category.tools.forEach((tool) => {
-            job_list.value.forEach(([job_tool_id, job]) => {
-                if (tool.id === job_tool_id && job.state === "launched") {
-                    running_tools.push(tool)
+            jobList.value.forEach(([job_tool_id, job]) => {
+                if (
+                    tool.id === job_tool_id &&
+                    job.state === "launched" &&
+                    !runningTools.some((target) => target.id === tool.id)
+                ) {
+                    runningTools.push(tool)
                 }
             })
         })
     })
 
-    return running_tools
+    return runningTools
 })
 </script>
 

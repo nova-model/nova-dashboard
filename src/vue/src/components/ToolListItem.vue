@@ -2,7 +2,9 @@
 <template>
     <v-list-item>
         <v-list-item-title>{{ tool.name }}</v-list-item-title>
-        <v-list-item-subtitle>{{ tool.description }}</v-list-item-subtitle>
+        <v-list-item-subtitle :title="tool.description">
+            {{ tool.description }}
+        </v-list-item-subtitle>
 
         <template v-slot:append>
             <v-list-item-action>

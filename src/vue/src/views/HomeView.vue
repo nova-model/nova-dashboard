@@ -17,14 +17,19 @@
                 </v-banner>
                 <v-container v-else>
                     <v-row>
-                        <v-col v-for="(tool, key) in props.tools" :key="key" cols="12" lg="4">
+                        <v-col
+                            v-for="(technique, key) in availableTechniques"
+                            :key="key"
+                            cols="12"
+                            lg="4"
+                        >
                             <v-card
                                 :to="`/${key}`"
                                 class="d-flex fill-height flex-column justify-center"
                             >
                                 <v-card-item>
-                                    <v-card-title class="mb-1">{{ tool.name }}</v-card-title>
-                                    <v-card-subtitle>{{ tool.description }}</v-card-subtitle>
+                                    <v-card-title class="mb-1">{{ technique.name }}</v-card-title>
+                                    <v-card-subtitle>{{ technique.description }}</v-card-subtitle>
                                     <template v-slot:append>
                                         <v-icon>mdi-open-in-app</v-icon>
                                     </template>
@@ -39,7 +44,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue"
+import { computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
 
 import { useJobStore } from "@/stores/job"
@@ -55,6 +60,18 @@ const props = defineProps({
 const router = useRouter()
 const job = useJobStore()
 const user = useUserStore()
+
+const availableTechniques = computed(() => {
+    const techniques = {}
+
+    for (const [key, value] of Object.entries(props.tools)) {
+        if (key !== "generic") {
+            techniques[key] = value
+        }
+    }
+
+    return techniques
+})
 
 onMounted(async () => {
     if (user.is_logged_in) {
