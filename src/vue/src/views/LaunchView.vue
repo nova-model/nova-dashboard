@@ -73,6 +73,7 @@ const { checking_galaxy_login, is_logged_in, ucams_auth_url, xcams_auth_url } = 
 const route = useRoute()
 
 const foundInGalaxy = ref(false)
+const hasLaunched = ref(false) // This is used to avoid launching the tool again if they stop it while on this page.
 const launching = ref(false)
 const targetJob = ref(null)
 const targetTool = ref(null)
@@ -91,9 +92,10 @@ function findTargetJob() {
 
     // We are logged in, the tool has been confirmed to exist, and we didn't find any job for it in Galaxy,
     // so we can launch it here.
-    if (targetJob.value === null && !launching.value) {
+    if (targetJob.value === null && !hasLaunched.value && !launching.value) {
         job.launchJob(targetTool.value.id)
         launching.value = true
+        hasLaunched.value = true
     }
 }
 
