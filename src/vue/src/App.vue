@@ -104,6 +104,32 @@
                     Powered by Calvera
                 </a>
                 <v-spacer />
+                <span class="text-caption">
+                    <a
+                        class="text-decoration-none text-black"
+                        href="https://nova-application-development.readthedocs.io/en/latest/"
+                        target="_blank"
+                    >
+                        Docs
+                    </a>
+                    &middot;
+                    <a
+                        class="text-decoration-none text-black"
+                        href="https://nova.ornl.gov/tutorial"
+                        target="_blank"
+                    >
+                        Tutorial
+                    </a>
+                    &middot;
+                    <a
+                        class="text-decoration-none text-black"
+                        href="https://calvera.ornl.gov/docs/admin_guide/administration/services/dashboard/"
+                        target="_blank"
+                    >
+                        Administration
+                    </a>
+                </span>
+                <v-spacer />
                 <a
                     href="https://www.ornl.gov/"
                     class="text-grey-lighten-1 text-caption text-decoration-none"
@@ -112,6 +138,7 @@
                     © 2024 ORNL
                 </a>
             </v-footer>
+
             <v-dialog v-model="user.requires_galaxy_login" persistent width="400">
                 <v-card class="text-center">
                     <v-card-text>
