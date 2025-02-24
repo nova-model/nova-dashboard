@@ -135,7 +135,7 @@
                     class="text-grey-lighten-1 text-caption text-decoration-none"
                     target="_blank"
                 >
-                    © 2024 ORNL
+                    © {{ new Date().getFullYear() }} ORNL
                 </a>
             </v-footer>
 
