@@ -19,12 +19,8 @@
                     </div>
                 </div>
                 <div v-else>
-                    <!-- Tool does not exist -->
-                    <div v-if="targetTool === null">
-                        <p>No tool with id "{{ route.params.tool }}" could be found.</p>
-                    </div>
                     <!-- Looking for a job in Galaxy -->
-                    <div v-else-if="checking_galaxy_login || !foundInGalaxy">
+                    <div v-if="checking_galaxy_login || !foundInGalaxy">
                         <v-progress-circular indeterminate />
                     </div>
                     <!-- Galaxy job was found -->
@@ -53,7 +49,7 @@
 <script setup>
 import { storeToRefs } from "pinia"
 import { onMounted, ref } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 
 import ToolStatus from "@/components/ToolStatus.vue"
 import { useJobStore } from "@/stores/job"
@@ -71,6 +67,7 @@ const { jobs } = storeToRefs(job)
 const user = useUserStore()
 const { checking_galaxy_login, is_logged_in, ucams_auth_url, xcams_auth_url } = storeToRefs(user)
 const route = useRoute()
+const router = useRouter()
 
 const foundInGalaxy = ref(false)
 const hasLaunched = ref(false) // This is used to avoid launching the tool again if they stop it while on this page.
@@ -104,14 +101,22 @@ function findTargetTool() {
         const toolList = props.tools[key].tools
         toolList.forEach((tool) => {
             if (tool.id === route.params.tool) {
-                targetTool.value = tool
+                return tool
             }
         })
     }
+
+    return null
 }
 
 onMounted(async () => {
-    findTargetTool()
+    targetTool.value = findTargetTool()
+    if (targetTool.value === null) {
+        router.replace({
+            name: "not-found",
+            params: { catchAll: route.path.substring(1).split("/") }
+        })
+    }
 
     job.startMonitor(user, findTargetJob)
     if (!user.is_logged_in) {
