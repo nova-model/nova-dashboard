@@ -38,9 +38,10 @@ WORKDIR /opt/run/vue
 RUN pnpm install
 
 WORKDIR /opt/run/django
-RUN chmod og+rwX /pnpm
-RUN chmod og+rwX /poetry
-RUN chmod og+rwX /opt/run/django
+RUN chmod og+rwX -R /pnpm
+RUN chmod og+rwX -R /poetry
+RUN chmod og+rwX -R /opt/run/django
+RUN chmod og+rwX -R /opt/run/vue
 
 
 FROM source AS run

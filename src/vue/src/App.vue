@@ -198,7 +198,6 @@ const genericTools = computed(() => {
 
 onMounted(async () => {
     await user.getUser()
-    user.getAutoopen()
 
     if (user.is_logged_in) {
         await user.userStatus()
