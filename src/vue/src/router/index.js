@@ -8,6 +8,7 @@ import { useJobStore } from "../stores/job"
 import CategoryView from "../views/CategoryView.vue"
 import LaunchView from "../views/LaunchView.vue"
 import HomeView from "../views/HomeView.vue"
+import NotFoundView from "../views/NotFoundView.vue"
 
 let tools = {}
 
@@ -44,6 +45,11 @@ export default async function initRouter() {
                 name: "launch",
                 component: LaunchView,
                 props: { tools }
+            },
+            {
+                path: "/:catchAll(.*)*",
+                name: "not-found",
+                component: NotFoundView
             }
         ]
     })
