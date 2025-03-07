@@ -1,12 +1,14 @@
 import Cookies from "js-cookie"
 import { defineStore } from "pinia"
+import { nextTick } from "vue"
 
 export const useJobStore = defineStore("job", {
     state: () => {
         return {
-            autoopen: false,
+            user: null,
             callback: null,
             galaxy_error: "",
+            has_monitored: false,
             jobs: {},
             running: false,
             timeout: 1000,
@@ -104,7 +106,8 @@ export const useJobStore = defineStore("job", {
                         job.url &&
                         (await this.urlReady(job.url))
                     ) {
-                        if (this.autoopen) {
+                        this.user.getAutoopen()
+                        if (this.user.autoopen && this.jobs[job.tool_id].submitted) {
                             window.open(job.url, "_blank")
                         }
 
@@ -166,13 +169,20 @@ export const useJobStore = defineStore("job", {
                 window.clearTimeout(this.monitor_task)
             }
             this.monitor_task = setTimeout(this.monitorJobs, this.timeout)
+
+            // nextTick ensures that any updates to the UI from this monitoring loop have been committed.
+            // Setting this flag will allow users to launch tools, which should only be possible after
+            // the UI has been updated with the results of the initial monitoring.
+            nextTick(() => {
+                this.has_monitored = true
+            })
         },
         restartMonitor() {
             this.timeout = 1000
             this.monitorJobs()
         },
         startMonitor(user, callback) {
-            this.autoopen = user.autoopen
+            this.user = user
             this.callback = callback
             this.monitorJobs()
         },
