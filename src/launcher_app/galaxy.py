@@ -66,7 +66,6 @@ class GalaxyManager:
         with open(settings.NOVA_TOOLS_PATH, "r") as file:
             tool_json = json.load(file)
         tool_details = {}
-
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
         for galaxy_category in galaxy_tools:
