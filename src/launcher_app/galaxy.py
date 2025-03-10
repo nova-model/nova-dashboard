@@ -93,19 +93,22 @@ class GalaxyManager:
             store.persist()
             tool = Tool(tool_id)
             tool.run(data_store=store, params=Parameters(), wait=False)
-            self.tools[tool.get_uid()] = tool
 
-    def monitor_jobs(self) -> list:
+    def monitor_jobs(self, tool_ids: list[str]) -> list:
         status_list = []
-        with self.connection.connect():
-            for tool in self.tools.keys():
+        with self.connection.connect() as connection:
+            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+            store.persist()
+            for tool_id in tool_ids:
+                tool = Tool("")
+                tool.assign_id(new_id=tool_id, data_store=store)
                 try:
                     status_list.append(
                         {
-                            "job_id": self.tools[tool].get_uid(),
-                            "tool_id": self.tools[tool].id,
-                            "state": self.tools[tool].get_status().value,
-                            "url": self.tools[tool].get_url(),
+                            "job_id": tool.get_uid(),
+                            "tool_id": tool.id,
+                            "state": tool.get_status().value,
+                            "url": tool.get_url(),
                         }
                     )
                 except Exception:  # TODO: Might try to handle these better
@@ -119,7 +122,3 @@ class GalaxyManager:
             tool = Tool("")
             tool.assign_id(new_id=tool_uid, data_store=store)
             tool.cancel()
-            try:
-                self.tools.pop(tool_uid)
-            except Exception:
-                logger.warning(f"Could not remove id from tool list: {tool_uid}. Job does not exist or has stopped.")

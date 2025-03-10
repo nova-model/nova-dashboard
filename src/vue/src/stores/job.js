@@ -72,7 +72,14 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
-            const response = await fetch("/api/galaxy/monitor/")
+            const job_ids = []
+            for (const j in this.jobs) {
+                job_ids.push(j.id)
+            }
+            const response = await fetch("/api/galaxy/monitor/", {
+                method: "POST",
+                body: JSON.stringify({ "tool_ids": job_ids }),
+            })
             const data = await response.json()
 
             if (response.status === 200) {
