@@ -78,7 +78,7 @@ export const useJobStore = defineStore("job", {
             }
             const response = await fetch("/api/galaxy/monitor/", {
                 method: "POST",
-                body: JSON.stringify({ "tool_ids": job_ids }),
+                body: JSON.stringify({ tool_ids: job_ids })
             })
             const data = await response.json()
 
