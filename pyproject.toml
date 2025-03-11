@@ -21,7 +21,7 @@ requests = "^2.32.3"
 requests-oauthlib = "^2.0.0"
 django-stubs = "^5.0.4"
 trame-facade = "^0.3.2"
-nova-galaxy = "^0.7.0"
+nova-galaxy = "^0.7.1"
 poetry-dotenv = "^0.4.0"
 
 [[tool.poetry.source]]
