@@ -39,6 +39,8 @@ export const useJobStore = defineStore("job", {
             if (response.status === 200) {
                 this.running = true
                 this.jobs[tool_id].submitted = true
+                const data = await response.json()
+                this.jobs[tool_id].id = data.id
                 this.restartMonitor()
             } else {
                 this.jobs[tool_id].state = "stopped"
@@ -72,12 +74,16 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
-            const job_ids = []
+            const job_ids = new Map()
             for (const j in this.jobs) {
-                job_ids.push(j.id)
+                job_ids.set(j, this.jobs[j].id)
             }
             const response = await fetch("/api/galaxy/monitor/", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken")
+                },
                 body: JSON.stringify({ tool_ids: job_ids })
             })
             const data = await response.json()

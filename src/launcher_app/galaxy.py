@@ -35,13 +35,13 @@ class GalaxyManager:
             self.auth_manager = auth_manager
             self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
             self._connect_to_galaxy()
-            self.tools: Dict[str, Tool] = {}
+            self.tools_to_check: Dict[str, str] = {}
             with self.connection.connect() as connection:
                 store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
                 store.persist()
                 for tool in store.recover_tools():
                     if tool.get_status() == WorkState.RUNNING:
-                        self.tools[tool.get_uid()] = tool
+                        self.tools_to_check[tool.id] = tool.get_uid()
 
     def _connect_to_galaxy(self) -> None:
         try:
@@ -93,19 +93,20 @@ class GalaxyManager:
             tool = Tool(tool_id)
             tool.run(data_store=store, params=Parameters(), wait=False)
 
-    def monitor_jobs(self, tool_ids: list[str]) -> list:
+    def monitor_jobs(self, tool_ids: dict[str, str]) -> list:
         status_list = []
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
-            for tool_id in tool_ids:
+            self.tools_to_check.update(tool_ids)
+            for tool_id, job_id in self.tools_to_check.items():
                 tool = Tool("")
-                tool.assign_id(new_id=tool_id, data_store=store)
+                tool.assign_id(new_id=job_id, data_store=store)
                 try:
                     status_list.append(
                         {
                             "job_id": tool.get_uid(),
-                            "tool_id": tool.id,
+                            "tool_id": tool_id,
                             "state": tool.get_status().value,
                             "url": tool.get_url(),
                         }
