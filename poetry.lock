@@ -1693,13 +1693,13 @@ reference = "trame-facade"
 
 [[package]]
 name = "nova-galaxy"
-version = "0.7.0"
+version = "0.7.1"
 description = "Utilties for accessing the ORNL Galaxy instance"
 optional = false
 python-versions = ">=3.10,<4.0"
 groups = ["main"]
 files = [
-    {file = "nova_galaxy-0.7.0-py3-none-any.whl", hash = "sha256:1ff51e5e7fcf050f7678a52dc4248ba3283f3bb222f45d24d7c13efba0d2c91f"},
+    {file = "nova_galaxy-0.7.1-py3-none-any.whl", hash = "sha256:42ee9f4abbcf1ef3ed69cb6172fa7c0aec6ec6f49951a4acd5d7477ff0948115"},
 ]
 
 [package.dependencies]
@@ -3068,4 +3068,4 @@ reference = "trame-facade"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "d3fa413f1a4523b27c8e15c257cba0e0406b0d1fba641167bd7d1feb7db9fbcc"
+content-hash = "441ae30c45e7da432d77a7f45184e8271cb09552abbb848dbf0fa07a731616ec"
