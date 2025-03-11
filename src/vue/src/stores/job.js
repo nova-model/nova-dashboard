@@ -2,6 +2,8 @@ import Cookies from "js-cookie"
 import { defineStore } from "pinia"
 import { nextTick } from "vue"
 
+const galaxy_url = import.meta.env.VITE_GALAXY_URL
+
 export const useJobStore = defineStore("job", {
     state: () => {
         return {
@@ -12,6 +14,7 @@ export const useJobStore = defineStore("job", {
             jobs: {},
             running: false,
             timeout: 1000,
+            timeout_error: false,
             monitor_task: null
         }
     },
@@ -149,12 +152,15 @@ export const useJobStore = defineStore("job", {
                         // The job hasn't starting reporting its status in one minute, something unexpected has happened.
                         job.state = "error"
 
-                        hasErrors = true
-                        this.galaxy_error = `Galaxy error: Tool failed to launch properly for an unknown reason.`
+                        this.timeout_error = true
+                        setTimeout(() => {
+                            this.timeout_error = false
+                        }, 15000)
+                        this.galaxy_error = `Galaxy error: Tool failed to respond within one minute. This may be due to an outage on ${galaxy_url}.`
                     }
                 })
 
-                if (!hasErrors) {
+                if (!hasErrors && !this.timeout_error) {
                     this.galaxy_error = ""
                 }
             } else {

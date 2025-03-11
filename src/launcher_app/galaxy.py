@@ -91,7 +91,11 @@ class GalaxyManager:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
             tool = Tool(tool_id)
-            tool.run(data_store=store, params=Parameters(), wait=False)
+            params = Parameters()
+            # This allows us to test the error monitoring at will on the test instance
+            if tool_id == "neutrons_remote_command":
+                params.add_input("command_mode|command", "fail")
+            tool.run(data_store=store, params=params, wait=False)
 
     def monitor_jobs(self, tool_ids: dict[str, str]) -> list:
         status_list = []
