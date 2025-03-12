@@ -9,6 +9,7 @@ GALAXY_HISTORY_NAME setting.
 
 import json
 import logging
+from time import sleep
 from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
@@ -86,7 +87,7 @@ class GalaxyManager:
 
         return tool_json
 
-    def launch_job(self, tool_id: str) -> None:
+    def launch_job(self, tool_id: str) -> str:
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
@@ -96,6 +97,9 @@ class GalaxyManager:
             if tool_id == "neutrons_remote_command":
                 params.add_input("command_mode|command", "fail")
             tool.run(data_store=store, params=params, wait=False)
+            while not tool.get_uid():
+                sleep(0.1)
+            return tool.get_uid()
 
     def monitor_jobs(self, tool_ids: dict[str, str]) -> list:
         status_list = []

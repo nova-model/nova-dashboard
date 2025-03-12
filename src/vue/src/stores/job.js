@@ -77,9 +77,9 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
-            const job_ids = new Map()
+            const job_ids = {}
             for (const j in this.jobs) {
-                job_ids.set(j, this.jobs[j].id)
+                job_ids[j] = this.jobs[j].id
             }
             const response = await fetch("/api/galaxy/monitor/", {
                 method: "POST",
