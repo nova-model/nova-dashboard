@@ -123,7 +123,7 @@
                     &middot;
                     <a
                         class="text-decoration-none text-black"
-                        href="https://calvera.ornl.gov/docs/admin_guide/administration/services/dashboard/"
+                        href="https://calvera.ornl.gov/docs/admin_guide/services/dashboard/"
                         target="_blank"
                     >
                         Administration
