@@ -99,7 +99,12 @@ export const useJobStore = defineStore("job", {
                 // Look for jobs that are running
                 data.jobs.forEach(async (job) => {
                     if (!(job.tool_id in this.jobs)) {
-                        this.jobs[job.tool_id] = { start: Date.now(), submitted: false, url: "" }
+                        this.jobs[job.tool_id] = {
+                            id: job.job_id,
+                            start: Date.now(),
+                            submitted: false,
+                            url: ""
+                        }
                     }
 
                     if (job.state === "error") {
