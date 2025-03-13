@@ -15,6 +15,8 @@ export const useJobStore = defineStore("job", {
             running: false,
             timeout: 1000,
             timeout_error: false,
+            timeout_duration: 60000,
+            error_reset_duration: 15000,
             monitor_task: null
         }
     },
@@ -108,6 +110,11 @@ export const useJobStore = defineStore("job", {
                             this.jobs[job.tool_id].id = job.job_id
                             this.jobs[job.tool_id].state = "error"
                             this.jobs[job.tool_id].submitted = false
+
+                            // Clear the launch error
+                            setTimeout(() => {
+                                delete this.jobs[job.tool_id]
+                            }, this.error_reset_duration)
                         }
                     }
 
@@ -134,28 +141,27 @@ export const useJobStore = defineStore("job", {
                 })
 
                 // Look for jobs that have stopped running
-                Object.values(this.jobs).forEach((job) => {
-                    // The timestamp key in this.jobs is a Number and needs to be skipped here.
-                    if (typeof job !== "object") {
-                        return
-                    }
+                Object.keys(this.jobs).forEach((tool_id) => {
+                    const job = this.jobs[tool_id]
 
                     if (
                         job.state !== "launching" &&
                         !data.jobs.some((target) => target.job_id === job.id)
                     ) {
-                        job.state = "stopped"
+                        // Tool stopped gracefully
+                        delete this.jobs[tool_id]
                     } else if (
                         !data.jobs.some((target) => target.job_id === job.id) &&
-                        Date.now() - job.start > 60000
+                        Date.now() - job.start > this.timeout_duration
                     ) {
                         // The job hasn't starting reporting its status in one minute, something unexpected has happened.
                         job.state = "error"
 
                         this.timeout_error = true
                         setTimeout(() => {
+                            delete this.jobs[tool_id]
                             this.timeout_error = false
-                        }, 15000)
+                        }, this.error_reset_duration)
                         this.galaxy_error = `Galaxy error: Tool failed to respond within one minute. This may be due to an outage on ${galaxy_url}.`
                     }
                 })
