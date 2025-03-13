@@ -97,16 +97,18 @@ function findTargetJob() {
 }
 
 function findTargetTool() {
+    let foundTool = null
+
     for (const key in props.tools) {
         const toolList = props.tools[key].tools
         toolList.forEach((tool) => {
             if (tool.id === route.params.tool) {
-                return tool
+                foundTool = tool
             }
         })
     }
 
-    return null
+    return foundTool
 }
 
 onMounted(async () => {
