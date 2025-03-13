@@ -111,14 +111,16 @@ class GalaxyManager:
                 tool = Tool("")
                 tool.assign_id(new_id=job_id, data_store=store)
                 try:
-                    status_list.append(
-                        {
-                            "job_id": tool.get_uid(),
-                            "tool_id": tool_id,
-                            "state": tool.get_status().value,
-                            "url": tool.get_url(),
-                        }
-                    )
+                    state = tool.get_status()
+                    if state != WorkState.DELETED:
+                        status_list.append(
+                            {
+                                "job_id": tool.get_uid(),
+                                "tool_id": tool_id,
+                                "state": state.value,
+                                "url": tool.get_url(),
+                            }
+                        )
                 except Exception:  # TODO: Might try to handle these better
                     continue
         return status_list
