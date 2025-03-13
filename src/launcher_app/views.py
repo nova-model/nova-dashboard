@@ -94,9 +94,9 @@ def galaxy_launch(request: HttpRequest) -> HttpResponse:
         galaxy_manager = GalaxyManager(auth_manager)
 
         data = json.loads(request.body)
-        galaxy_manager.launch_job(data.get("tool_id", None))
+        job_id = galaxy_manager.launch_job(data.get("tool_id", None))
 
-        return HttpResponse()
+        return JsonResponse({"id": job_id})
     except Exception as e:
         return _create_galaxy_error(e)
 
@@ -116,13 +116,14 @@ def galaxy_user_status(request: HttpRequest) -> JsonResponse:
 
 
 @login_required
-@require_GET
+@require_POST
 def galaxy_monitor(request: HttpRequest) -> JsonResponse:
     try:
         auth_manager = AuthManager(request)
         galaxy_manager = GalaxyManager(auth_manager)
+        data = json.loads(request.body)
 
-        return JsonResponse({"jobs": galaxy_manager.monitor_jobs()})
+        return JsonResponse({"jobs": galaxy_manager.monitor_jobs(data["tool_ids"])})
     except Exception as e:
         return _create_galaxy_error(e)
 

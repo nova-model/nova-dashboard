@@ -9,6 +9,7 @@ GALAXY_HISTORY_NAME setting.
 
 import json
 import logging
+from time import sleep
 from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
@@ -35,13 +36,13 @@ class GalaxyManager:
             self.auth_manager = auth_manager
             self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
             self._connect_to_galaxy()
-            self.tools: Dict[str, Tool] = {}
+            self.tools_to_check: Dict[str, str] = {}
             with self.connection.connect() as connection:
                 store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
                 store.persist()
                 for tool in store.recover_tools():
                     if tool.get_status() == WorkState.RUNNING:
-                        self.tools[tool.get_uid()] = tool
+                        self.tools_to_check[tool.id] = tool.get_uid()
 
     def _connect_to_galaxy(self) -> None:
         try:
@@ -66,7 +67,6 @@ class GalaxyManager:
         with open(settings.NOVA_TOOLS_PATH, "r") as file:
             tool_json = json.load(file)
         tool_details = {}
-
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
         for galaxy_category in galaxy_tools:
@@ -87,27 +87,40 @@ class GalaxyManager:
 
         return tool_json
 
-    def launch_job(self, tool_id: str) -> None:
+    def launch_job(self, tool_id: str) -> str:
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
             store.persist()
             tool = Tool(tool_id)
-            tool.run(data_store=store, params=Parameters(), wait=False)
-            self.tools[tool.get_uid()] = tool
+            params = Parameters()
+            # This allows us to test the error monitoring at will on the test instance
+            if tool_id == "neutrons_remote_command":
+                params.add_input("command_mode|command", "fail")
+            tool.run(data_store=store, params=params, wait=False)
+            while not tool.get_uid():
+                sleep(0.1)
+            return tool.get_uid()
 
-    def monitor_jobs(self) -> list:
+    def monitor_jobs(self, tool_ids: dict[str, str]) -> list:
         status_list = []
-        with self.connection.connect():
-            for tool in self.tools.keys():
+        with self.connection.connect() as connection:
+            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+            store.persist()
+            self.tools_to_check.update(tool_ids)
+            for tool_id, job_id in self.tools_to_check.items():
+                tool = Tool("")
+                tool.assign_id(new_id=job_id, data_store=store)
                 try:
-                    status_list.append(
-                        {
-                            "job_id": self.tools[tool].get_uid(),
-                            "tool_id": self.tools[tool].id,
-                            "state": self.tools[tool].get_status().value,
-                            "url": self.tools[tool].get_url(),
-                        }
-                    )
+                    state = tool.get_status()
+                    if state != WorkState.DELETED:
+                        status_list.append(
+                            {
+                                "job_id": tool.get_uid(),
+                                "tool_id": tool_id,
+                                "state": state.value,
+                                "url": tool.get_url(),
+                            }
+                        )
                 except Exception:  # TODO: Might try to handle these better
                     continue
         return status_list
@@ -119,7 +132,3 @@ class GalaxyManager:
             tool = Tool("")
             tool.assign_id(new_id=tool_uid, data_store=store)
             tool.cancel()
-            try:
-                self.tools.pop(tool_uid)
-            except Exception:
-                logger.warning(f"Could not remove id from tool list: {tool_uid}. Job does not exist or has stopped.")

@@ -2,6 +2,8 @@ import Cookies from "js-cookie"
 import { defineStore } from "pinia"
 import { nextTick } from "vue"
 
+const galaxy_url = import.meta.env.VITE_GALAXY_URL
+
 export const useJobStore = defineStore("job", {
     state: () => {
         return {
@@ -12,6 +14,9 @@ export const useJobStore = defineStore("job", {
             jobs: {},
             running: false,
             timeout: 1000,
+            timeout_error: false,
+            timeout_duration: 60000,
+            error_reset_duration: 15000,
             monitor_task: null
         }
     },
@@ -39,6 +44,8 @@ export const useJobStore = defineStore("job", {
             if (response.status === 200) {
                 this.running = true
                 this.jobs[tool_id].submitted = true
+                const data = await response.json()
+                this.jobs[tool_id].id = data.id
                 this.restartMonitor()
             } else {
                 this.jobs[tool_id].state = "stopped"
@@ -72,7 +79,18 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
-            const response = await fetch("/api/galaxy/monitor/")
+            const job_ids = {}
+            for (const j in this.jobs) {
+                job_ids[j] = this.jobs[j].id
+            }
+            const response = await fetch("/api/galaxy/monitor/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken")
+                },
+                body: JSON.stringify({ tool_ids: job_ids })
+            })
             const data = await response.json()
 
             if (response.status === 200) {
@@ -81,7 +99,12 @@ export const useJobStore = defineStore("job", {
                 // Look for jobs that are running
                 data.jobs.forEach(async (job) => {
                     if (!(job.tool_id in this.jobs)) {
-                        this.jobs[job.tool_id] = { start: Date.now(), submitted: false, url: "" }
+                        this.jobs[job.tool_id] = {
+                            id: job.job_id,
+                            start: Date.now(),
+                            submitted: false,
+                            url: ""
+                        }
                     }
 
                     if (job.state === "error") {
@@ -92,6 +115,11 @@ export const useJobStore = defineStore("job", {
                             this.jobs[job.tool_id].id = job.job_id
                             this.jobs[job.tool_id].state = "error"
                             this.jobs[job.tool_id].submitted = false
+
+                            // Clear the launch error
+                            setTimeout(() => {
+                                delete this.jobs[job.tool_id]
+                            }, this.error_reset_duration)
                         }
                     }
 
@@ -118,30 +146,32 @@ export const useJobStore = defineStore("job", {
                 })
 
                 // Look for jobs that have stopped running
-                Object.values(this.jobs).forEach((job) => {
-                    // The timestamp key in this.jobs is a Number and needs to be skipped here.
-                    if (typeof job !== "object") {
-                        return
-                    }
+                Object.keys(this.jobs).forEach((tool_id) => {
+                    const job = this.jobs[tool_id]
 
                     if (
                         job.state !== "launching" &&
                         !data.jobs.some((target) => target.job_id === job.id)
                     ) {
-                        job.state = "stopped"
+                        // Tool stopped gracefully
+                        delete this.jobs[tool_id]
                     } else if (
                         !data.jobs.some((target) => target.job_id === job.id) &&
-                        Date.now() - job.start > 60000
+                        Date.now() - job.start > this.timeout_duration
                     ) {
                         // The job hasn't starting reporting its status in one minute, something unexpected has happened.
                         job.state = "error"
 
-                        hasErrors = true
-                        this.galaxy_error = `Galaxy error: Tool failed to launch properly for an unknown reason.`
+                        this.timeout_error = true
+                        setTimeout(() => {
+                            delete this.jobs[tool_id]
+                            this.timeout_error = false
+                        }, this.error_reset_duration)
+                        this.galaxy_error = `Galaxy error: Tool failed to respond within one minute. This may be due to an outage on ${galaxy_url}.`
                     }
                 })
 
-                if (!hasErrors) {
+                if (!hasErrors && !this.timeout_error) {
                     this.galaxy_error = ""
                 }
             } else {
