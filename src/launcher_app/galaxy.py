@@ -66,6 +66,14 @@ class GalaxyManager:
         # I retrieve the tools.json like this to avoid errors when running locally.
         with open(settings.NOVA_TOOLS_PATH, "r") as file:
             tool_json = json.load(file)
+        try:
+            with open(settings.PROTOTYPE_TOOLS_PATH, "r") as file:
+                tool_json = tool_json | json.load(file)
+        except Exception:
+            # Prototype tools may not exist depending on the deployment environment.
+            # The file could also become mangled since anyone with access to the prototype branch can affect its
+            # generation. Due to these reasons, I think it's appropriate to be very broad in the error handling.
+            pass
         tool_details = {}
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
