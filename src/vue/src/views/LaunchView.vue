@@ -19,27 +19,13 @@
                     </div>
                 </div>
                 <div v-else>
-                    <!-- Looking for a job in Galaxy -->
-                    <div v-if="checking_galaxy_login || !foundInGalaxy">
-                        <v-progress-circular indeterminate />
-                    </div>
-                    <!-- Galaxy job was found -->
-                    <div v-else-if="targetJob !== null">
-                        <div v-if="targetJob.state === 'launched'">
-                            <p class="mb-2">Your tool is ready to be used.</p>
-                            <v-btn :href="targetJob.url" target="_blank">
-                                Open
-                                <v-icon>mdi-open-in-new</v-icon>
-                            </v-btn>
-                        </div>
-                        <p v-else-if="targetJob.state === 'stopped'">Your tool has been stopped.</p>
-                        <ToolStatus
-                            v-else
-                            :state="targetJob.state"
-                            :submitted="targetJob.submitted"
-                            :url="targetJob.url"
-                        />
-                    </div>
+                    <ToolStatus
+                        v-if="targetJob !== null"
+                        :state="targetJob.state"
+                        :submitted="targetJob.submitted"
+                        :url="targetJob.url"
+                    />
+                    <v-progress-circular v-else indeterminate />
                 </div>
             </v-card-text>
         </v-card>
@@ -70,12 +56,10 @@ const route = useRoute()
 const router = useRouter()
 
 const foundInGalaxy = ref(false)
-const hasLaunched = ref(false) // This is used to avoid launching the tool again if they stop it while on this page.
-const launching = ref(false)
 const targetJob = ref(null)
 const targetTool = ref(null)
 
-function findTargetJob() {
+function monitorCallback() {
     if (!is_logged_in || checking_galaxy_login.value || targetTool.value === null) {
         return
     }
@@ -89,10 +73,13 @@ function findTargetJob() {
 
     // We are logged in, the tool has been confirmed to exist, and we didn't find any job for it in Galaxy,
     // so we can launch it here.
-    if (targetJob.value === null && !hasLaunched.value && !launching.value) {
+    if (targetJob.value === null) {
         job.launchJob(targetTool.value.id)
-        launching.value = true
-        hasLaunched.value = true
+        targetJob.value = jobs.value[targetTool.value.id]
+    }
+
+    if (targetJob.value !== null && targetJob.value.state === "launched") {
+        window.location.href = targetJob.value.url
     }
 }
 
@@ -120,7 +107,7 @@ onMounted(async () => {
         })
     }
 
-    job.startMonitor(user, findTargetJob)
+    job.startMonitor(user, false, monitorCallback)
     if (!user.is_logged_in) {
         window.localStorage.setItem("lastpath", route.path)
         window.localStorage.setItem("redirect", true)

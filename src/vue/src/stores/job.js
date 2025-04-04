@@ -8,6 +8,7 @@ export const useJobStore = defineStore("job", {
     state: () => {
         return {
             user: null,
+            allow_autoopen: true,
             callback: null,
             galaxy_error: "",
             has_monitored: false,
@@ -97,7 +98,7 @@ export const useJobStore = defineStore("job", {
                 let hasErrors = false
 
                 // Look for jobs that are running
-                data.jobs.forEach(async (job) => {
+                for (const job of data.jobs) {
                     if (!(job.tool_id in this.jobs)) {
                         this.jobs[job.tool_id] = {
                             id: job.job_id,
@@ -135,7 +136,11 @@ export const useJobStore = defineStore("job", {
                         (await this.urlReady(job.url))
                     ) {
                         this.user.getAutoopen()
-                        if (this.user.autoopen && this.jobs[job.tool_id].submitted) {
+                        if (
+                            this.user.autoopen &&
+                            this.allow_autoopen &&
+                            this.jobs[job.tool_id].submitted
+                        ) {
                             window.open(job.url, "_blank")
                         }
 
@@ -143,7 +148,7 @@ export const useJobStore = defineStore("job", {
                         this.jobs[job.tool_id].state = "launched"
                         this.jobs[job.tool_id].submitted = false
                     }
-                })
+                }
 
                 // Look for jobs that have stopped running
                 Object.keys(this.jobs).forEach((tool_id) => {
@@ -211,8 +216,9 @@ export const useJobStore = defineStore("job", {
             this.timeout = 1000
             this.monitorJobs()
         },
-        startMonitor(user, callback) {
+        startMonitor(user, allow_autoopen, callback) {
             this.user = user
+            this.allow_autoopen = allow_autoopen
             this.callback = callback
             this.monitorJobs()
         },
