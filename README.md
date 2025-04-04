@@ -1,9 +1,7 @@
 # Introduction
 
-This repository is for the source code of the Trame Launcher App (running at https://nova.ornl.gov). The purpose
-of this web application is to serve as a dashboard for users to launch their Trame reduction apps without going through
-Calvera/Galaxy.
-
+This repository is for the source code of the NOVA dashboard (running at https://nova.ornl.gov). The dashboard provides a
+way for users to launch interactive tools without going through Calvera.
 
 ## Install dependencies
 
@@ -12,6 +10,7 @@ the following commands to build the source code.
 
 ```bash
 poetry install
+poetry run ./manage.py migrate
 ```
 
 ```bash
@@ -36,7 +35,7 @@ pnpm run dev --host 0.0.0.0 --port 5173
 ```
 After that to start the application (from the root directory):
 ```bash
-poetry run ./manage.py migrate && poetry run ./manage.py runserver_plus --insecure 0.0.0.0:8080
+poetry run ./manage.py runserver_plus --insecure 0.0.0.0:8080
 ````
 
 ## Develop
