@@ -30,9 +30,6 @@
                                 <v-card-item>
                                     <v-card-title class="mb-1">{{ technique.name }}</v-card-title>
                                     <v-card-subtitle>{{ technique.description }}</v-card-subtitle>
-                                    <template v-slot:append>
-                                        <v-icon>mdi-open-in-app</v-icon>
-                                    </template>
                                 </v-card-item>
                             </v-card>
                         </v-col>

@@ -81,6 +81,7 @@
                 @click="toggleDrawer"
             >
                 <v-icon>mdi-tools</v-icon>
+                <v-tooltip activator="parent">Tools that can be used by all techniques.</v-tooltip>
             </v-fab>
             <v-navigation-drawer v-model="drawer" location="right" width="450" app temporary>
                 <ToolDrawer :tools="genericTools" />

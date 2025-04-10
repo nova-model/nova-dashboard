@@ -9,16 +9,10 @@
     <v-container v-if="category !== null" class="align-start d-flex justify-center mt-16">
         <v-card width="800">
             <v-card-title class="text-center">{{ category.name }} Applications</v-card-title>
-            <v-card-subtitle>
-                <p class="mb-2">
-                    The below tools are currently supported for running on Calvera. You must be
-                    signed in to launch them. You may sign in using the button in the top right
-                    corner of this page.
-                </p>
-                <p>
-                    Tools that can be used by all techniques can be found by clicking the tool icon
-                    at the top left of this page.
-                </p>
+            <v-card-subtitle v-if="!user.is_logged_in">
+                The below tools are currently supported for running on Calvera. You must be signed
+                in to launch them. You may sign in using the button in the top right corner of this
+                page.
             </v-card-subtitle>
 
             <v-card-text>
