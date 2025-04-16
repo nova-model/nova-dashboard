@@ -120,13 +120,17 @@ class GalaxyManager:
                 tool.assign_id(new_id=job_id, data_store=store)
                 try:
                     state = tool.get_status()
+                    url = tool.get_url()
+                    response = connection.galaxy_instance.make_get_request(url)
+                    ready = response.status_code == 200
                     if state != WorkState.DELETED:
                         status_list.append(
                             {
                                 "job_id": tool.get_uid(),
                                 "tool_id": tool_id,
                                 "state": state.value,
-                                "url": tool.get_url(),
+                                "url": url,
+                                "url_ready": ready,
                             }
                         )
                 except Exception:  # TODO: Might try to handle these better

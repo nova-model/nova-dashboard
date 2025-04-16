@@ -57,6 +57,7 @@
                         :state="jobs[tool.id]?.state"
                         :submitted="jobs[tool.id]?.submitted"
                         :url="jobs[tool.id]?.url"
+                        :url-ready="jobs[tool.id]?.url_ready"
                     />
                 </div>
             </v-list-item-action>

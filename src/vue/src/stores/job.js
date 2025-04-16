@@ -28,7 +28,8 @@ export const useJobStore = defineStore("job", {
                 start: Date.now(),
                 submitted: false,
                 state: "launching",
-                url: ""
+                url: "",
+                url_ready: false
             }
 
             const response = await fetch("/api/galaxy/launch/", {
@@ -104,7 +105,8 @@ export const useJobStore = defineStore("job", {
                             id: job.job_id,
                             start: Date.now(),
                             submitted: false,
-                            url: ""
+                            url: "",
+                            url_ready: false
                         }
                     }
 
@@ -124,16 +126,16 @@ export const useJobStore = defineStore("job", {
                         }
                     }
 
-                    if (job.url) {
+                    if (job.url && !this.jobs[job.tool_id].url_ready) {
                         this.jobs[job.tool_id].url = job.url
+                        this.jobs[job.tool_id].url_ready = job.url_ready
                     }
 
                     if (
                         job.state === "running" &&
                         this.jobs[job.tool_id].state !== "stopping" &&
                         this.jobs[job.tool_id].state !== "launched" &&
-                        job.url &&
-                        (await this.urlReady(job.url))
+                        job.url_ready
                     ) {
                         this.user.getAutoopen()
                         if (
@@ -221,15 +223,6 @@ export const useJobStore = defineStore("job", {
             this.allow_autoopen = allow_autoopen
             this.callback = callback
             this.monitorJobs()
-        },
-        async urlReady(url) {
-            try {
-                const response = await fetch(url)
-
-                return response.status > 199 && response.status < 300
-            } catch {
-                return false
-            }
         }
     }
 })
