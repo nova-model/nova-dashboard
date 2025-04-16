@@ -29,6 +29,10 @@ const props = defineProps({
     url: {
         required: true,
         type: String
+    },
+    urlReady: {
+        required: true,
+        type: Boolean
     }
 })
 
@@ -38,7 +42,7 @@ const status_text = computed(() => {
         return `Stopping job on ${galaxy_url}`
     }
 
-    if (props.url) {
+    if (props.url && !props.urlReady) {
         is_slow.value = false
 
         return `Waiting for application to respond`
