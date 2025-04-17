@@ -94,7 +94,7 @@ def galaxy_launch(request: HttpRequest) -> HttpResponse:
         galaxy_manager = GalaxyManager(auth_manager)
 
         data = json.loads(request.body)
-        job_id = galaxy_manager.launch_job(data.get("tool_id", None))
+        job_id = galaxy_manager.launch_job(data.get("tool_id", None), data.get("inputs", {}))
 
         return JsonResponse({"id": job_id})
     except Exception as e:

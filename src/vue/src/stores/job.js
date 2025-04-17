@@ -22,7 +22,7 @@ export const useJobStore = defineStore("job", {
         }
     },
     actions: {
-        async launchJob(tool_id) {
+        async launchJob(tool_id, inputs) {
             this.jobs[tool_id] = {
                 id: "",
                 start: Date.now(),
@@ -39,7 +39,8 @@ export const useJobStore = defineStore("job", {
                     "X-CSRFToken": Cookies.get("csrftoken")
                 },
                 body: JSON.stringify({
-                    tool_id: tool_id
+                    tool_id: tool_id,
+                    inputs: inputs
                 })
             })
 
