@@ -6,7 +6,9 @@ specified in urls.py file.
 
 import json
 from importlib.resources import open_text
+from typing import Any
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import (
     HttpRequest,
@@ -18,6 +20,7 @@ from django.http import (
 from django.shortcuts import redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
+from requests import ConnectionError
 from requests import request as proxy_request
 
 from .auth import AuthManager
@@ -78,8 +81,14 @@ def get_user(request: HttpRequest) -> JsonResponse:
     )
 
 
-def _create_galaxy_error(exception: Exception) -> JsonResponse:
-    return JsonResponse({"error": str(exception)}, status=500)
+def _create_galaxy_error(exception: Exception, **kwargs: Any) -> JsonResponse:
+    message = str(exception)
+    if isinstance(exception, json.JSONDecodeError):
+        message = f"Unable to fetch tool list, {settings.GALAXY_URL} may be restarting."
+    if isinstance(exception, ConnectionError):
+        message = f"Unable to connect to Galaxy, {settings.GALAXY_URL} may be restarting."
+
+    return JsonResponse({"error": message, **kwargs}, status=500)
 
 
 def _create_galaxy_status_error(exception: Exception, auth_type: str, status_code: int) -> JsonResponse:
@@ -150,7 +159,7 @@ def galaxy_tools(request: HttpRequest) -> JsonResponse:
 
         return JsonResponse({"tools": galaxy_manager.get_tools()})
     except Exception as e:
-        return JsonResponse({"error": str(e), "tools": {}}, status=500)
+        return _create_galaxy_error(e, tools={})
 
 
 @require_GET
