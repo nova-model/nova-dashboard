@@ -58,6 +58,7 @@ const router = useRouter()
 const foundInGalaxy = ref(false)
 const targetJob = ref(null)
 const targetTool = ref(null)
+let inputs = {}
 
 function monitorCallback() {
     if (!is_logged_in || checking_galaxy_login.value || targetTool.value === null) {
@@ -74,7 +75,7 @@ function monitorCallback() {
     // We are logged in, the tool has been confirmed to exist, and we didn't find any job for it in Galaxy,
     // so we can launch it here.
     if (targetJob.value === null) {
-        job.launchJob(targetTool.value.id)
+        job.launchJob(targetTool.value.id, inputs)
         targetJob.value = jobs.value[targetTool.value.id]
     }
 
@@ -99,6 +100,7 @@ function findTargetTool() {
 }
 
 onMounted(async () => {
+    inputs = route.query
     targetTool.value = findTargetTool()
     if (targetTool.value === null) {
         router.replace({

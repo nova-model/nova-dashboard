@@ -95,16 +95,27 @@ class GalaxyManager:
 
         return tool_json
 
-    def launch_job(self, tool_id: str) -> str:
+    def launch_job(self, tool_id: str, inputs: dict[str, str]) -> str:
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-            store.persist()
+            file_store = connection.create_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_data")
+
             tool = Tool(tool_id)
-            params = Parameters()
+
+            launch_params = Parameters()
+            for key, value in inputs.items():
+                load_data = Tool("neutrons_register")
+                load_params = Parameters()
+                load_params.add_input("series_0|input", value)
+                outputs = load_data.run(file_store, load_params)
+                launch_params.add_input(key, {"src": "hda", "id": outputs.data[0].id})
+
             # This allows us to test the error monitoring at will on the test instance
             if tool_id == "neutrons_remote_command":
-                params.add_input("command_mode|command", "fail")
-            tool.run(data_store=store, params=params, wait=False)
+                launch_params.add_input("command_mode|command", "fail")
+
+            tool.run(data_store=store, params=launch_params, wait=False)
+
             while not tool.get_uid():
                 sleep(0.1)
             return tool.get_uid()
