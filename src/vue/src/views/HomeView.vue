@@ -62,7 +62,7 @@ const availableTechniques = computed(() => {
     const techniques = {}
 
     for (const [key, value] of Object.entries(props.tools)) {
-        if (key !== "generic") {
+        if (key !== "generic-tools") {
             techniques[key] = value
         }
     }
