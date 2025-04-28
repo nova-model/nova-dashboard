@@ -194,8 +194,8 @@ const drawer = ref(false)
 const genericTools = computed(() => {
     const tools = getTools()
 
-    if (tools?.generic) {
-        return tools.generic
+    if ("generic-tools" in tools) {
+        return tools["generic-tools"]
     }
 
     return []
