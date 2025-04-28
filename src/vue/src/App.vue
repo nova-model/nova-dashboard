@@ -74,7 +74,11 @@
             </v-app-bar>
 
             <v-fab
-                v-if="genericTools.length > 0 && !drawer"
+                v-if="
+                    (genericTools?.tools?.length > 0 ||
+                        genericTools?.prototype_tools?.length > 0) &&
+                    !drawer
+                "
                 location="right center"
                 app
                 icon
@@ -84,7 +88,7 @@
                 <v-tooltip activator="parent">Tools that can be used by all techniques.</v-tooltip>
             </v-fab>
             <v-navigation-drawer v-model="drawer" location="right" width="450" app temporary>
-                <ToolDrawer :tools="genericTools" />
+                <ToolDrawer :tool-data="genericTools" />
             </v-navigation-drawer>
 
             <RouterView v-if="user.ready" />
@@ -190,8 +194,8 @@ const drawer = ref(false)
 const genericTools = computed(() => {
     const tools = getTools()
 
-    if (tools?.generic?.tools) {
-        return tools.generic.tools
+    if (tools?.generic) {
+        return tools.generic
     }
 
     return []

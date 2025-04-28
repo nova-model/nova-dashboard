@@ -68,18 +68,27 @@ class GalaxyManager:
             tool_json = json.load(file)
         try:
             with open(settings.PROTOTYPE_TOOLS_PATH, "r") as file:
-                tool_json = tool_json | json.load(file)
+                prototype_tool_json = json.load(file)
         except Exception:
             # Prototype tools may not exist depending on the deployment environment.
             # The file could also become mangled since anyone with access to the prototype branch can affect its
             # generation. Due to these reasons, I think it's appropriate to be very broad in the error handling.
-            pass
+            prototype_tool_json = {}
         tool_details = {}
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
         for galaxy_category in galaxy_tools:
             for tool in galaxy_category.get("elems", []):
                 tool_details[tool["id"]] = tool
+
+        for key, id in prototype_tool_json:
+            if key not in tool_json:
+                key = "misc"
+
+            category = tool_json[key]
+            if "prototype_tools" not in category:
+                category["prototype_tools"] = []
+            category["prototype_tools"].append(id)
 
         for key in tool_json:
             category = tool_json[key]
@@ -88,6 +97,15 @@ class GalaxyManager:
                     galaxy_tool = tool_details[tool_id]
 
                     category["tools"][index] = {
+                        "id": tool_id,
+                        "name": galaxy_tool["name"],
+                        "description": self._parse_tool_help(galaxy_tool["help"]),
+                    }
+            for index, tool_id in enumerate(category.get("prototype_tools", [])):
+                if tool_id in tool_details:
+                    galaxy_tool = tool_details[tool_id]
+
+                    category["prototype_tools"][index] = {
                         "id": tool_id,
                         "name": galaxy_tool["name"],
                         "description": self._parse_tool_help(galaxy_tool["help"]),
