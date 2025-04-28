@@ -35,6 +35,17 @@
                         class="pa-2"
                     />
                 </v-list>
+
+                <v-list v-if="category?.prototype_tools?.length > 0">
+                    <v-list-subheader>Prototype Tools</v-list-subheader>
+
+                    <ToolListItem
+                        v-for="(tool, index) in category.prototype_tools"
+                        :key="index"
+                        :tool="tool"
+                        class="pa-2"
+                    />
+                </v-list>
             </v-card-text>
         </v-card>
     </v-container>
