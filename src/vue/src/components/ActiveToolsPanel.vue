@@ -38,7 +38,11 @@ const toolList = computed(() => {
     // Returns all tools connected with a Galaxy job
     const runningTools = []
     Object.values(tools).forEach((tool_category) => {
-        tool_category.tools.forEach((tool) => {
+        let all_tools = tool_category.tools
+        if (tool_category.prototype_tools !== undefined) {
+            all_tools = all_tools.concat(tool_category.prototype_tools)
+        }
+        all_tools.forEach((tool) => {
             jobList.value.forEach(([job_tool_id, job]) => {
                 if (
                     tool.id === job_tool_id &&
