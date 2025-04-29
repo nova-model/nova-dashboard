@@ -88,7 +88,10 @@ function findTargetTool() {
     let foundTool = null
 
     for (const key in props.tools) {
-        const toolList = props.tools[key].tools
+        let toolList = props.tools[key].tools
+        if (props.tools[key].prototype_tools !== undefined) {
+            toolList = toolList.concat(props.tools[key].prototype_tools)
+        }
         toolList.forEach((tool) => {
             if (tool.id === route.params.tool) {
                 foundTool = tool

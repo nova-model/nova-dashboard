@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "launcher-app"
-version = "0.9.1"
+version = "0.9.2"
 description = ""
 authors = ["Yakubov, Sergey <yakubovs@ornl.gov>", "Cage, Gregory <cagege@ornl.gov>", "Duggan, John <dugganjw@ornl.gov>"]
 readme = "README.md"
