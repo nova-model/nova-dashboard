@@ -16,9 +16,8 @@
                 <v-tooltip activator="parent" max-width="300" open-delay="250">
                     <p v-if="linkCopied">Auto-launch link copied!</p>
                     <p v-else>
-                        Click to copy a URL that will auto-launch this tool when opened. If you use
-                        this tool frequently, you may want to consider creating either a browser
-                        bookmark or a desktop shortcut to this link.
+                        Click to copy a direct link to this app. If you use this tool frequently,
+                        consider creating a browser bookmark or desktop shortcut to this link.
                     </p>
                 </v-tooltip>
             </v-btn>
@@ -35,8 +34,12 @@
                 <v-btn v-else-if="!is_logged_in" disabled>Sign in to run apps</v-btn>
                 <v-btn v-else-if="!has_monitored" disabled>Checking running tools</v-btn>
                 <div v-else>
-                    <v-btn v-if="canLaunch(jobs, tool.id)" @click="job.launchJob(tool.id)">
-                        Launch
+                    <v-btn
+                        v-if="canLaunch(jobs, tool.id)"
+                        @click="job.launchJob(tool.id)"
+                        color="success"
+                    >
+                        Start
                         <v-icon>mdi-play</v-icon>
                     </v-btn>
                     <v-btn v-if="canUse(jobs, tool.id)" :href="jobs[tool.id]?.url" target="_blank">
