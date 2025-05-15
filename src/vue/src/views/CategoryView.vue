@@ -1,12 +1,12 @@
 <!-- Defines the content when the user is viewing a category's tool list. -->
 <template>
-    <v-breadcrumbs v-if="category !== null" class="position-fixed">
+    <v-breadcrumbs v-if="category !== null">
         <v-breadcrumbs-item to="/">Home</v-breadcrumbs-item>
         <v-breadcrumbs-divider />
         <v-breadcrumbs-item>{{ category.name }}</v-breadcrumbs-item>
     </v-breadcrumbs>
 
-    <v-container v-if="category !== null" class="align-start d-flex justify-center mt-16">
+    <v-container v-if="category !== null" class="align-start d-flex justify-center">
         <v-card width="800">
             <v-card-title class="text-center">{{ category.name }} Applications</v-card-title>
             <v-card-subtitle v-if="!user.is_logged_in">

@@ -36,8 +36,8 @@
                 <div v-else>
                     <v-btn
                         v-if="canLaunch(jobs, tool.id)"
+                        color="primary"
                         @click="job.launchJob(tool.id)"
-                        color="success"
                     >
                         Start
                         <v-icon>mdi-play</v-icon>
