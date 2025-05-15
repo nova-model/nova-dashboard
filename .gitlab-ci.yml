@@ -54,7 +54,6 @@ unit-tests:
   tags:
     - rse-multi-builder
 
-
 build-image:
   stage: image
   variables:
@@ -78,8 +77,6 @@ build-image:
       fi
   tags:
     - rse-multi-builder
-
-
 # package-build:
 #   stage: package
 #   script:

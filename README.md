@@ -29,14 +29,17 @@ When setting your environment variables, please download https://nova-test.ornl.
 and ensure that `NOVA_TOOLS_PATH` points to it.
 
 After your environment is configured, run the following to start the client:
+
 ```bash
 cd src/vue
 pnpm run dev --host 0.0.0.0 --port 5173
 ```
+
 After that to start the application (from the root directory):
+
 ```bash
 poetry run ./manage.py runserver_plus --insecure 0.0.0.0:8080
-````
+```
 
 ## Develop
 
@@ -44,6 +47,7 @@ Run `poetry env info  --path` to see the path to Poetry environment. It can then
 to configure your IDE to select the correct Python interpreter.
 
 ## Docker
+
 ### Build the image
 
 without conda and mantid:
