@@ -1,60 +1,87 @@
 <template>
     <v-alert
-        tile
         v-if="show"
-        :color="statusType === 'resolved' ? 'success' : 'warning'"
-        :icon="statusType === 'resolved' ? 'mdi-check-circle' : 'mdi-database-off'"
+        :color="alertColor"
+        :icon="alertIcon"
         lines="one"
         closable
+        tile
         @click:close="show = false"
     >
-        {{ message }}
+        <p>{{ alertTitle }}</p>
+
+        <v-expansion-panels class="w-25" v-if="alerts.length > 0">
+            <v-expansion-panel color="warning" elevation="0" title="View Alerts" tile>
+                <template v-slot:text>
+                    <v-list bg-color="warning">
+                        <v-list-item
+                            v-for="alert in alerts"
+                            :title="alert?.annotations?.title"
+                            :subtitle="alert?.annotations?.description"
+                        />
+                    </v-list>
+                </template>
+            </v-expansion-panel>
+        </v-expansion-panels>
     </v-alert>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue"
+import { computed, ref, onMounted, onBeforeUnmount } from "vue"
 
 const show = ref(false)
-const message = ref("")
 const statusType = ref("alert")
-const alerts_url = "http://10.64.193.81:32001/api/v1/alerts"
-let lastAlertMessage =
-    "One or more NDIP services are currently experiencing issues. You may be unable to run tools during this time. If issues persist, please contact the NDIP team."
+const alerts = ref([])
+const alertsUrl = "http://10.64.193.81:32001/api/v1/alerts"
+const alertColor = computed(() => (statusType.value === "resolved" ? "success" : "warning"))
+const alertIcon = computed(() =>
+    statusType.value === "resolved" ? "mdi-check-circle" : "mdi-database-off"
+)
+const alertTitle = computed(() => {
+    if (statusType.value === "resolved") {
+        return "All systems are back to normal. Click to dismiss."
+    } else {
+        return "One or more NDIP services are currently experiencing issues. You may be unable to run tools during this time. If issues persist, please contact the NDIP team."
+    }
+})
+let lastAlertMessage = ""
+
 let pollInterval = null
 
 const checkStatus = async () => {
     try {
-        const response = await fetch(alerts_url)
+        const response = await fetch(alertsUrl)
         const result = await response.json()
-        console.log(result)
-        const alerts = result?.data?.alerts || []
+        alerts.value = result?.data?.alerts || []
 
-        if (alerts.length > 0) {
-            const latestMessage = alerts[0].annotations.title
+        if (alerts.value.length > 0) {
+            const latestMessage = alerts.value[0]?.annotations?.description || ""
 
             if (latestMessage !== lastAlertMessage) {
-                message.value = latestMessage
                 lastAlertMessage = latestMessage
                 statusType.value = "alert"
                 show.value = true
             }
         } else if (show.value && statusType.value === "alert") {
-            message.value = "All systems are back to normal. Click to dismiss."
+            alerts.value = []
+            lastAlertMessage = ""
             statusType.value = "resolved"
-
-            setTimeout(() => {
-                if (statusType.value === resolved) {
-                    show.value = false
-                    lastAlertMessage = ""
-                }
-            }, 1000)
+        } else {
+            alerts.value = []
+            lastAlertMessage = ""
+            show.value = false
         }
     } catch (error) {
-        console.error("failed to fetch alerts:", error)
-        message.value = "Could not connect to database"
-        statusType.value = "alert"
+        console.error("Failed to retrieve NDIP service status:", error)
+        alerts.value = [
+            {
+                annotations: {
+                    title: "Failed to retrieve NDIP service status."
+                }
+            }
+        ]
         show.value = true
+        statusType.value = "alert"
     }
 }
 
@@ -67,3 +94,9 @@ onBeforeUnmount(() => {
     clearInterval(pollInterval)
 })
 </script>
+
+<style>
+.v-expansion-panel-text__wrapper {
+    padding: 0 !important;
+}
+</style>

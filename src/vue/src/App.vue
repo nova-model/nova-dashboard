@@ -2,7 +2,7 @@
 <template>
     <v-app>
         <v-main>
-            <v-app-bar>
+            <v-app-bar elevation="0">
                 <v-app-bar-title class="cursor-pointer flex-0-1 mr-1" @click="$router.push('/')">
                     Neutrons Application Dashboard
                 </v-app-bar-title>
@@ -21,7 +21,15 @@
                                     <a :href="galaxy_url" target="_blank">Galaxy</a>.
                                 </p>
 
-                                <p>The dashboard is currently running version {{ version }}.</p>
+                                <p>
+                                    The dashboard is currently running version {{ version }}.
+                                    <a
+                                        href="https://code.ornl.gov/ndip/nova-dashboard/-/blob/main/CHANGELOG.md"
+                                        target="_blank"
+                                    >
+                                        View Changelog
+                                    </a>
+                                </p>
                             </v-card-text>
                         </v-card>
                     </v-menu>
@@ -72,6 +80,7 @@
                 </div>
                 <v-progress-circular v-else class="mr-4" indeterminate />
             </v-app-bar>
+
             <StatusBanner />
 
             <v-fab
