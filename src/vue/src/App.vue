@@ -72,6 +72,7 @@
                 </div>
                 <v-progress-circular v-else class="mr-4" indeterminate />
             </v-app-bar>
+            <StatusBanner />
 
             <v-fab
                 v-if="
@@ -173,6 +174,7 @@ import ToolDrawer from "@/components/ToolDrawer.vue"
 import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
+import StatusBanner from "./components/StatusBanner.vue"
 
 const tools = getTools()
 const job = useJobStore()

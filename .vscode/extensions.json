@@ -1,8 +1,8 @@
 {
-    "recommendations": [
-        "charliermarsh.ruff",
-        "ms-python.mypy-type-checker",
-        "vue.volar",
-        "rvest.vs-code-prettier-eslint"
-    ]
+  "recommendations": [
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+    "vue.volar",
+    "rvest.vs-code-prettier-eslint"
+  ]
 }
