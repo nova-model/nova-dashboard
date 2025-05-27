@@ -16,8 +16,8 @@
                     <v-list bg-color="warning">
                         <v-list-item
                             v-for="alert in alerts"
-                            :title="alert?.annotations?.title"
-                            :subtitle="alert?.annotations?.description"
+                            :title="alert.title"
+                            :subtitle="alert.subtitle"
                         />
                     </v-list>
                 </template>
@@ -28,11 +28,11 @@
 
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue"
+import getAlertData from "@/assets/js/alerts"
 
 const show = ref(false)
 const statusType = ref("alert")
 const alerts = ref([])
-const alertsUrl = "http://10.64.193.81:32001/api/v1/alerts"
 const alertColor = computed(() => (statusType.value === "resolved" ? "success" : "warning"))
 const alertIcon = computed(() =>
     statusType.value === "resolved" ? "mdi-check-circle" : "mdi-database-off"
@@ -50,12 +50,10 @@ let pollInterval = null
 
 const checkStatus = async () => {
     try {
-        const response = await fetch(alertsUrl)
-        const result = await response.json()
-        alerts.value = result?.data?.alerts || []
+        alerts.value = await getAlertData()
 
         if (alerts.value.length > 0) {
-            const latestMessage = alerts.value[0]?.annotations?.description || ""
+            const latestMessage = alerts.value[0].subtitle || ""
 
             if (latestMessage !== lastAlertMessage) {
                 lastAlertMessage = latestMessage
@@ -73,21 +71,12 @@ const checkStatus = async () => {
         }
     } catch (error) {
         console.error("Failed to retrieve NDIP service status:", error)
-        alerts.value = [
-            {
-                annotations: {
-                    title: "Failed to retrieve NDIP service status."
-                }
-            }
-        ]
-        show.value = true
-        statusType.value = "alert"
     }
 }
 
 onMounted(() => {
     checkStatus()
-    pollInterval = setInterval(checkStatus, 60000)
+    pollInterval = setInterval(checkStatus, 5000)
 })
 
 onBeforeUnmount(() => {
