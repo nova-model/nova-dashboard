@@ -1,3 +1,7 @@
+### nova-dashboard, 0.10.1
+
+* Alert monitoring can now be configured to specify the endpoint containing alert data, the format of the data, and the types of alerts to hide (thanks to John Duggan).
+
 ### nova-dashboard, 0.10.0
 
 * The dashboard now displays an alert if any NDIP services are experiencing known issues (thanks to Kristin Maroun).
