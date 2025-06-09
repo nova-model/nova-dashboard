@@ -7,33 +7,7 @@
                     Neutrons Application Dashboard
                 </v-app-bar-title>
 
-                <v-btn size="x-small" icon>
-                    <v-icon>mdi-information-outline</v-icon>
-
-                    <v-menu activator="parent" :close-on-content-click="false" open-on-hover>
-                        <v-card width="600">
-                            <v-card-title class="mb-2 px-0">About This Dashboard</v-card-title>
-                            <v-card-text class="pa-0">
-                                <p class="mb-2">
-                                    This dashboard has been developed as a part of the NOVA LDRD
-                                    project. It is meant to serve as a way to launch and manage
-                                    interactive applications running in
-                                    <a :href="galaxy_url" target="_blank">Galaxy</a>.
-                                </p>
-
-                                <p>
-                                    The dashboard is currently running version {{ version }}.
-                                    <a
-                                        href="https://code.ornl.gov/ndip/nova-dashboard/-/blob/main/CHANGELOG.md"
-                                        target="_blank"
-                                    >
-                                        View Changelog
-                                    </a>
-                                </p>
-                            </v-card-text>
-                        </v-card>
-                    </v-menu>
-                </v-btn>
+                <InfoPanel />
 
                 <v-spacer />
 
@@ -81,7 +55,7 @@
                 <v-progress-circular v-else class="mr-4" indeterminate />
             </v-app-bar>
 
-            <StatusBanner />
+            <StatusPanel />
 
             <v-fab
                 v-if="
@@ -183,9 +157,9 @@ import ToolDrawer from "@/components/ToolDrawer.vue"
 import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
-import StatusBanner from "./components/StatusBanner.vue"
+import InfoPanel from "@/components/InfoPanel.vue"
+import StatusPanel from "@/components/StatusPanel.vue"
 
-const tools = getTools()
 const job = useJobStore()
 const { running } = storeToRefs(job)
 const user = useUserStore()
@@ -198,8 +172,6 @@ const {
     xcams_auth_url
 } = storeToRefs(user)
 const route = useRoute()
-const galaxy_url = import.meta.env.VITE_GALAXY_URL
-const version = import.meta.env.VITE_DASHBOARD_VERSION
 const drawer = ref(false)
 
 const genericTools = computed(() => {

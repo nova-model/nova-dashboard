@@ -25,6 +25,7 @@ from requests import request as proxy_request
 
 from .auth import AuthManager
 from .galaxy import GalaxyManager
+from .status import StatusManager
 
 
 @require_GET
@@ -57,6 +58,20 @@ def xcams_redirect(request: HttpRequest) -> HttpResponseRedirect:
     auth_manager.login(request, email, given_name)
 
     return redirect("/")
+
+
+@require_GET
+def get_alerts(request: HttpRequest) -> JsonResponse:
+    status_manager = StatusManager()
+
+    return JsonResponse(status_manager.get_alerts(), safe=False)
+
+
+@require_GET
+def get_targets(request: HttpRequest) -> JsonResponse:
+    status_manager = StatusManager()
+
+    return JsonResponse(status_manager.get_targets(), safe=False)
 
 
 @ensure_csrf_cookie

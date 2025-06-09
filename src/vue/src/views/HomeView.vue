@@ -1,6 +1,6 @@
 <!-- Defines the content when the user is on the landing page. -->
 <template>
-    <v-container class="align-start d-flex justify-center mt-16">
+    <v-container class="align-start d-flex justify-center">
         <v-card width="1280">
             <v-card-title class="text-center">
                 Welcome to the Neutrons Application Dashboard
