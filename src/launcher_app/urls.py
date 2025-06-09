@@ -24,6 +24,8 @@ from . import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("vuetify_config.json", views.get_vuetify_config),
+    path("api/status/alerts/", views.get_alerts),
+    path("api/status/targets/", views.get_targets),
     path("api/auth/user/", views.get_user),
     path("api/galaxy/user_status/", views.galaxy_user_status),
     path("api/galaxy/launch/", views.galaxy_launch),

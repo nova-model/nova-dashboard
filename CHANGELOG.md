@@ -1,3 +1,7 @@
+### nova-dashboard, 0.11.0
+
+* Alerts are now grouped according to the service they are affected (thanks to John Duggan).
+
 ### nova-dashboard, 0.10.1
 
 * Alert monitoring can now be configured to specify the endpoint containing alert data, the format of the data, and the types of alerts to hide (thanks to John Duggan).

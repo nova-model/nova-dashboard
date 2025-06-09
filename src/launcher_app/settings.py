@@ -9,6 +9,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import json
 import os
 from pathlib import Path
 
@@ -125,6 +126,12 @@ XCAMS_SCOPES = os.environ["XCAMS_SCOPES"]
 GALAXY_URL = os.environ["GALAXY_URL"]
 GALAXY_API_KEY_ENDPOINT = os.environ["GALAXY_API_KEY_ENDPOINT"]
 GALAXY_HISTORY_NAME = os.environ.get("GALAXY_HISTORY_NAME", "launcher_history")
+
+# System status settings
+ALERTS_ENVIRONMENTS = json.loads(os.environ.get("ALERTS_ENVIRONMENTS", "[]"))
+ALERTS_FORMAT = os.environ.get("ALERTS_FORMAT", "")
+ALERTS_URL = os.environ.get("ALERTS_URL", "")
+TARGETS_URL = os.environ.get("TARGETS_URL", "")
 
 # NOVA tools.json location
 NOVA_TOOLS_PATH = os.environ["NOVA_TOOLS_PATH"]
