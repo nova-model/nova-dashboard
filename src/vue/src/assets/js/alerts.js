@@ -26,7 +26,7 @@ class Service {
         }
 
         this.alerts = []
-        this.aliases = aliases
+        this.aliases = aliases.sort((a, b) => a.name.localeCompare(b.name))
         this.countText = ""
         this.name = name
         this.status = "success"
@@ -128,11 +128,11 @@ export default class AlertManager {
         if (this.services === null) {
             await this.initServices()
         }
-        this.reset()
 
         const response = await fetch(this.alertsUrl)
         const data = await response.json()
 
+        this.reset()
         for (const alert of data) {
             if (alert.group in this.services) {
                 this.alerts.push(alert)

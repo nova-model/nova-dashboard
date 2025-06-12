@@ -1,58 +1,69 @@
 <template>
-    <v-banner :bg-color="statusColor(bannerStatus)" class="cursor-pointer justify-center py-0">
-        {{ statusMessage(bannerStatus) }}
-
-        <v-menu activator="parent" :close-on-content-click="false" open-on-hover>
-            <v-card width="fit-content">
-                <v-card-title class="mb-2 px-0">NDIP System Status</v-card-title>
-                <v-card-text class="pa-0">
-                    <v-list>
-                        <div v-for="service in alertManager.services">
-                            <v-list-group v-if="service.countText">
-                                <template v-slot:activator="{ props }">
-                                    <v-list-item v-bind="props" class="bg-white border-none">
-                                        <template v-slot:prepend>
-                                            <v-icon :color="statusColor(service.status)">
-                                                {{ statusIcon(service.status) }}
-                                            </v-icon>
-                                        </template>
-
-                                        <v-list-item-title>
-                                            {{ service.name }}{{ service.countText }}
-                                        </v-list-item-title>
-                                    </v-list-item>
-                                </template>
-
-                                <v-list-item
-                                    v-for="alias in service.aliases"
-                                    class="bg-white border-none"
-                                >
+    <v-menu
+        :close-on-content-click="false"
+        location="bottom center"
+        max-width="400"
+        min-width="0"
+        open-on-hover
+    >
+        <template v-slot:activator="{ props }">
+            <v-banner
+                v-bind="props"
+                :bg-color="statusColor(bannerStatus)"
+                class="cursor-pointer justify-center py-0"
+            >
+                {{ statusMessage(bannerStatus) }}
+            </v-banner>
+        </template>
+        <v-card>
+            <v-card-title class="mb-2 px-0">NDIP System Status</v-card-title>
+            <v-card-text class="pa-0">
+                <v-list>
+                    <div v-for="service in alertManager.services">
+                        <v-list-group v-if="service.countText">
+                            <template v-slot:activator="{ props }">
+                                <v-list-item v-bind="props" class="bg-white border-none">
                                     <template v-slot:prepend>
-                                        <v-icon :color="statusColor(alias.status)">
-                                            {{ statusIcon(alias.status) }}
+                                        <v-icon :color="statusColor(service.status)">
+                                            {{ statusIcon(service.status) }}
                                         </v-icon>
                                     </template>
 
-                                    {{ alias.name }}
+                                    <v-list-item-title>
+                                        {{ service.name }}{{ service.countText }}
+                                    </v-list-item-title>
                                 </v-list-item>
-                            </v-list-group>
-                            <v-list-item v-else class="bg-white border-none">
+                            </template>
+
+                            <v-list-item
+                                v-for="alias in service.aliases"
+                                class="bg-white border-none"
+                            >
                                 <template v-slot:prepend>
-                                    <v-icon :color="statusColor(service.status)">
-                                        {{ statusIcon(service.status) }}
+                                    <v-icon :color="statusColor(alias.status)">
+                                        {{ statusIcon(alias.status) }}
                                     </v-icon>
                                 </template>
 
-                                <v-list-item-title>
-                                    {{ service.name }}
-                                </v-list-item-title>
+                                {{ alias.name }}
                             </v-list-item>
-                        </div>
-                    </v-list>
-                </v-card-text>
-            </v-card>
-        </v-menu>
-    </v-banner>
+                        </v-list-group>
+                        <v-list-item v-else class="bg-white border-none">
+                            <template v-slot:prepend>
+                                <v-icon :color="statusColor(service.status)">
+                                    {{ statusIcon(service.status) }}
+                                </v-icon>
+                            </template>
+
+                            <v-list-item-title>
+                                {{ service.name }}
+                            </v-list-item-title>
+                        </v-list-item>
+                    </div>
+                </v-list>
+            </v-card-text>
+        </v-card>
+    </v-menu>
 </template>
 
 <script setup>
@@ -117,9 +128,3 @@ onBeforeUnmount(() => {
     clearInterval(pollInterval)
 })
 </script>
-
-<style>
-.v-expansion-panel-text__wrapper {
-    padding: 0 !important;
-}
-</style>
