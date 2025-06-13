@@ -1,3 +1,7 @@
+### nova-dashboard, 0.11.1
+
+* Users can now logout of the site (thanks to John Duggan).
+
 ### nova-dashboard, 0.11.0
 
 * Alerts are now grouped according to the service they are affected (thanks to John Duggan).
