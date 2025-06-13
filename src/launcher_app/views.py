@@ -9,6 +9,7 @@ from importlib.resources import open_text
 from typing import Any
 
 from django.conf import settings
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import (
     HttpRequest,
@@ -26,6 +27,13 @@ from requests import request as proxy_request
 from .auth import AuthManager
 from .galaxy import GalaxyManager
 from .status import StatusManager
+
+
+@require_GET
+def logout_user(request: HttpRequest) -> HttpResponseRedirect:
+    logout(request)
+
+    return redirect("/")
 
 
 @require_GET
@@ -179,7 +187,7 @@ def galaxy_tools(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def client_proxy(request: HttpRequest) -> StreamingHttpResponse:
-    """Proxy requests to the VIte dev server during development.
+    """Proxy requests to the Vite dev server during development.
 
     This method is only available in DEBUG mode.
     """

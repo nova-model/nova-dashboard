@@ -51,6 +51,18 @@
                             </v-card>
                         </v-menu>
                     </v-btn>
+
+                    <v-btn v-if="is_logged_in" icon>
+                        <v-icon>mdi-account-circle</v-icon>
+
+                        <v-menu activator="parent">
+                            <v-list>
+                                <v-list-item prepend-icon="mdi-logout" @click="logout">
+                                    Logout
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </v-btn>
                 </div>
                 <v-progress-circular v-else class="mr-4" indeterminate />
             </v-app-bar>
@@ -148,6 +160,7 @@
 </template>
 
 <script setup>
+import Cookies from "js-cookie"
 import { computed, onMounted, ref } from "vue"
 import { storeToRefs } from "pinia"
 import { RouterView, useRoute } from "vue-router"
@@ -202,5 +215,10 @@ function toggleDrawer() {
 
 function stopLoginPrompt() {
     user.resetUser()
+}
+
+function logout() {
+    Cookies.remove("csrftoken")
+    window.location.replace("/logout/")
 }
 </script>
