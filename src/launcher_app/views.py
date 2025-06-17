@@ -108,7 +108,7 @@ def _create_galaxy_error(exception: Exception, **kwargs: Any) -> JsonResponse:
     message = str(exception)
     if isinstance(exception, json.JSONDecodeError):
         message = f"Unable to fetch tool list, {settings.GALAXY_URL} may be restarting."
-    if isinstance(exception, ConnectionError):
+    if isinstance(exception, ConnectionError) or "502 Bad Gateway" in message:
         message = f"Unable to connect to Galaxy, {settings.GALAXY_URL} may be restarting."
 
     return JsonResponse({"error": message, **kwargs}, status=500)
