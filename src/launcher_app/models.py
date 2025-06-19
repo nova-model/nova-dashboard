@@ -9,6 +9,13 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 
+class Notification(models.Model):
+    """Stores a notification broadcast to all users."""
+
+    display: models.BooleanField = models.BooleanField(blank=True, default=False)
+    message: models.CharField = models.CharField(max_length=255, blank=True)
+
+
 class OAuthSessionState(models.Model):
     """Keeps track of OAuth session state.
 

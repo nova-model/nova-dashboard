@@ -17,6 +17,11 @@
         </template>
         <v-card>
             <v-card-title class="mb-2 px-0">NDIP System Status</v-card-title>
+            <v-card-subtitle v-if="alertManager.monitoringUrl">
+                <v-btn :href="alertManager.monitoringUrl" target="_blank">
+                    View Monitoring Details
+                </v-btn>
+            </v-card-subtitle>
             <v-card-text class="pa-0">
                 <v-list>
                     <div v-for="service in alertManager.services">

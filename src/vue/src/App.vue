@@ -8,6 +8,7 @@
                 </v-app-bar-title>
 
                 <InfoPanel />
+                <NotificationPanel ref="notificationPanel" v-show="is_admin" />
 
                 <v-spacer />
 
@@ -68,6 +69,17 @@
             </v-app-bar>
 
             <StatusPanel />
+            <v-banner
+                v-if="
+                    notificationPanel &&
+                    notificationPanel.displayNotification &&
+                    notificationPanel.notificationMessage
+                "
+                class="bg-warning justify-center py-0"
+            >
+                <v-icon class="mr-1">mdi-information-outline</v-icon>
+                {{ notificationPanel.notificationMessage }}
+            </v-banner>
 
             <v-fab
                 v-if="
@@ -171,6 +183,7 @@ import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 import InfoPanel from "@/components/InfoPanel.vue"
+import NotificationPanel from "@/components/NotificationPanel.vue"
 import StatusPanel from "@/components/StatusPanel.vue"
 
 const job = useJobStore()
@@ -180,12 +193,14 @@ const {
     autoopen,
     checking_galaxy_login,
     given_name,
+    is_admin,
     is_logged_in,
     ucams_auth_url,
     xcams_auth_url
 } = storeToRefs(user)
 const route = useRoute()
 const drawer = ref(false)
+const notificationPanel = ref(null)
 
 const genericTools = computed(() => {
     const tools = getTools()

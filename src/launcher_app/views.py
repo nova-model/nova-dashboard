@@ -11,22 +11,30 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import AbstractBaseUser
+from django.core.exceptions import PermissionDenied
 from django.http import (
     HttpRequest,
     HttpResponse,
+    HttpResponseBadRequest,
     HttpResponseRedirect,
     JsonResponse,
     StreamingHttpResponse,
 )
 from django.shortcuts import redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from requests import ConnectionError
 from requests import request as proxy_request
 
 from .auth import AuthManager
 from .galaxy import GalaxyManager
+from .notification import NotificationManager
 from .status import StatusManager
+
+
+def is_admin(user: AbstractBaseUser) -> bool:
+    return user.get_username() in settings.ADMINS
 
 
 @require_GET
@@ -38,7 +46,7 @@ def logout_user(request: HttpRequest) -> HttpResponseRedirect:
 
 @require_GET
 def get_vuetify_config(request: HttpRequest) -> JsonResponse:
-    with open_text("trame_facade", "vuetify_config.json") as vuetify_config:
+    with open_text("nova", "trame/view/theme/assets/vuetify_config.json") as vuetify_config:
         return JsonResponse(json.load(vuetify_config))
 
 
@@ -72,7 +80,12 @@ def xcams_redirect(request: HttpRequest) -> HttpResponseRedirect:
 def get_alerts(request: HttpRequest) -> JsonResponse:
     status_manager = StatusManager()
 
-    return JsonResponse(status_manager.get_alerts(), safe=False)
+    alert_data = {
+        "alerts": status_manager.get_alerts(),
+        "url": settings.MONITORING_URL if request.user.is_authenticated and is_admin(request.user) else "",
+    }
+
+    return JsonResponse(alert_data)
 
 
 @require_GET
@@ -91,12 +104,15 @@ def get_user(request: HttpRequest) -> JsonResponse:
     auth_manager = AuthManager(request)
 
     given_name = None
+    admin = False
     if request.user.is_authenticated:
         given_name = request.user.first_name  # type: ignore
+        admin = is_admin(request.user)
 
     return JsonResponse(
         {
             "given_name": given_name,
+            "is_admin": admin,
             "is_logged_in": given_name is not None,
             "ucams": auth_manager.get_ucams_auth_url(),
             "xcams": auth_manager.get_xcams_auth_url(),
@@ -183,6 +199,25 @@ def galaxy_tools(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"tools": galaxy_manager.get_tools()})
     except Exception as e:
         return _create_galaxy_error(e, tools={})
+
+
+@require_http_methods(["GET", "POST"])
+def notification(request: HttpRequest) -> HttpResponse:
+    notification_manager = NotificationManager()
+
+    if request.method == "GET":
+        return JsonResponse(notification_manager.get())
+
+    if not request.user.is_authenticated or not is_admin(request.user):
+        raise PermissionDenied
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        notification_manager.set(data)
+    except Exception:
+        return HttpResponseBadRequest("message parameter is missing")
+
+    return HttpResponse()
 
 
 @require_GET

@@ -14,7 +14,8 @@ from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from nova.galaxy import Connection, Parameters, Tool, WorkState
+from nova.common.job import WorkState
+from nova.galaxy import Connection, Parameters, Tool
 from requests import get as requests_get
 
 from .auth import AuthManager

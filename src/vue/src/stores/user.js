@@ -6,6 +6,7 @@ export const useUserStore = defineStore("user", {
             autoopen: false, // if true, tools will open in a new tab once they've successfully launched
             checking_galaxy_login: false,
             given_name: null,
+            is_admin: false,
             is_logged_in: false,
             ucams_auth_url: "/",
             xcams_auth_url: "/",
@@ -20,6 +21,7 @@ export const useUserStore = defineStore("user", {
             const data = await response.json()
 
             this.given_name = data.given_name
+            this.is_admin = data.is_admin
             this.is_logged_in = data.is_logged_in && !this.requires_galaxy_login
             this.ucams_auth_url = data.ucams
             this.xcams_auth_url = data.xcams
