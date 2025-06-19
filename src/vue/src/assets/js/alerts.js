@@ -80,6 +80,7 @@ export default class AlertManager {
 
         this.alerts = []
         this.services = null
+        this.monitoringUrl = ""
     }
 
     reset() {
@@ -131,9 +132,12 @@ export default class AlertManager {
 
         const response = await fetch(this.alertsUrl)
         const data = await response.json()
+        this.monitoringUrl = data?.url
 
         this.reset()
-        for (const alert of data) {
+
+        const alerts = data?.alerts || []
+        for (const alert of alerts) {
             if (alert.group in this.services) {
                 this.alerts.push(alert)
                 this.services[alert.group].addAlert(alert)

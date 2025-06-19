@@ -86,6 +86,9 @@ DATABASES = {
     }
 }
 
+# List of emails that can edit the system notification
+ADMINS = json.loads(os.environ.get("ADMINISTRATOR_EMAILS", "[]"))
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -130,6 +133,7 @@ GALAXY_HISTORY_NAME = os.environ.get("GALAXY_HISTORY_NAME", "launcher_history")
 # System status settings
 ALERTS_ENVIRONMENTS = json.loads(os.environ.get("ALERTS_ENVIRONMENTS", "[]"))
 ALERTS_FORMAT = os.environ.get("ALERTS_FORMAT", "")
+MONITORING_URL = os.environ.get("MONITORING_URL", "")
 ALERTS_URL = os.environ.get("ALERTS_URL", "")
 TARGETS_URL = os.environ.get("TARGETS_URL", "")
 

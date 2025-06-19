@@ -1,3 +1,7 @@
+### nova-dashboard, 0.12.0
+
+* A banner will display on the top of the page when relevant notifications from the administrators are available (thanks to Kristin Maroun and John Duggan).
+
 ### nova-dashboard, 0.11.1
 
 * Users can now logout of the site (thanks to John Duggan).

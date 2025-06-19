@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "launcher-app"
-version = "0.11.1"
+version = "0.12.0"
 description = ""
 authors = ["Yakubov, Sergey <yakubovs@ornl.gov>", "Cage, Gregory <cagege@ornl.gov>", "Duggan, John <dugganjw@ornl.gov>"]
 readme = "README.md"
@@ -20,14 +20,9 @@ pyjwt = "^2.9.0"
 requests = "^2.32.3"
 requests-oauthlib = "^2.0.0"
 django-stubs = "^5.0.4"
-trame-facade = "^0.3.2"
-nova-galaxy = "^0.7.2"
-poetry-dotenv = "^0.4.0"
-
-[[tool.poetry.source]]
-name = "trame-facade"
-url = "https://code.ornl.gov/api/v4/projects/16294/packages/pypi/simple"
-priority = "primary"
+nova-trame = "^0.22.0"
+nova-galaxy = "^0.11.1"
+poetry-plugin-dotenv = "^2.12.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -89,7 +84,7 @@ omit = [
 command_line = "-m pytest --junit-xml=reports/junit.xml"
 data_file = "reports/.coverage"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
 pre-commit = "^2.20.0"
 coverage = "^6.4.3"
