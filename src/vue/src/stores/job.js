@@ -2,12 +2,14 @@ import Cookies from "js-cookie"
 import { defineStore } from "pinia"
 import { nextTick } from "vue"
 
+import { useUserStore } from "@/stores/user"
+
 const galaxy_url = import.meta.env.VITE_GALAXY_URL
 
 export const useJobStore = defineStore("job", {
     state: () => {
         return {
-            user: null,
+            user: useUserStore(),
             allow_autoopen: true,
             callback: null,
             galaxy_error: "",
@@ -82,6 +84,8 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
+            await this.user.userStatus()
+
             const job_ids = {}
             for (const j in this.jobs) {
                 job_ids[j] = this.jobs[j].id
@@ -219,8 +223,7 @@ export const useJobStore = defineStore("job", {
             this.timeout = 1000
             this.monitorJobs()
         },
-        startMonitor(user, allow_autoopen, callback) {
-            this.user = user
+        startMonitor(allow_autoopen, callback) {
             this.allow_autoopen = allow_autoopen
             this.callback = callback
             this.monitorJobs()

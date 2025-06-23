@@ -46,7 +46,7 @@ def logout_user(request: HttpRequest) -> HttpResponseRedirect:
 
 @require_GET
 def get_vuetify_config(request: HttpRequest) -> JsonResponse:
-    with open_text("nova", "trame/view/theme/assets/vuetify_config.json") as vuetify_config:
+    with open_text("nova.trame.view.theme.assets", "vuetify_config.json") as vuetify_config:
         return JsonResponse(json.load(vuetify_config))
 
 
@@ -155,12 +155,15 @@ def galaxy_user_status(request: HttpRequest) -> JsonResponse:
     session_type = ""
     try:
         auth_manager = AuthManager(request)
+        auth_manager.delete_galaxy_api_key()  # Forces Galaxy to verify refresh token
         session_type = auth_manager.oauth_state.session_type
         GalaxyManager(auth_manager)
 
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        return _create_galaxy_status_error(e, session_type, status_code=450)
+        if "Invalid access token" in str(e):
+            return _create_galaxy_status_error(e, session_type, status_code=450)
+        return _create_galaxy_error(e)
 
 
 @login_required

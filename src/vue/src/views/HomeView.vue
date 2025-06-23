@@ -72,7 +72,7 @@ const availableTechniques = computed(() => {
 
 onMounted(async () => {
     if (user.is_logged_in) {
-        job.startMonitor(user)
+        job.startMonitor()
 
         const lastpath = window.localStorage.getItem("lastpath")
         const redirect = window.localStorage.getItem("redirect")

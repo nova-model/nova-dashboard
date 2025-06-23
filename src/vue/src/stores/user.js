@@ -29,17 +29,17 @@ export const useUserStore = defineStore("user", {
         },
         async userStatus() {
             this.checking_galaxy_login = true
-            this.is_logged_in = false
 
             const response = await fetch("/api/galaxy/user_status/")
             const data = await response.json()
 
             if (response.status == 450) {
+                this.is_logged_in = false
                 this.requires_galaxy_login = true
                 this.login_type = data["auth_type"]
             } else {
-                this.requires_galaxy_login = false
                 this.is_logged_in = true
+                this.requires_galaxy_login = false
 
                 window.localStorage.removeItem("lastpath")
                 window.localStorage.removeItem("redirect", false)
