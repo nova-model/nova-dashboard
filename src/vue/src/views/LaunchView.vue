@@ -10,7 +10,7 @@
             </v-banner>
             <v-card-text v-else>
                 <!-- Login required -->
-                <div v-if="!checking_galaxy_login && !is_logged_in">
+                <div v-if="!is_logged_in">
                     <p class="mb-2">You must log in before your tool can be launched.</p>
 
                     <div>
@@ -112,7 +112,7 @@ onMounted(async () => {
         })
     }
 
-    job.startMonitor(user, false, monitorCallback)
+    job.startMonitor(false, monitorCallback)
     if (!user.is_logged_in) {
         window.localStorage.setItem("lastpath", route.path)
         window.localStorage.setItem("redirect", true)

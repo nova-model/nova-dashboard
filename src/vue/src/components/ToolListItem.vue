@@ -30,9 +30,8 @@
 
         <template v-slot:append>
             <v-list-item-action>
-                <v-btn v-if="checking_galaxy_login" disabled>Checking login status</v-btn>
+                <v-btn v-if="!has_monitored" disabled>Checking login status</v-btn>
                 <v-btn v-else-if="!is_logged_in" disabled>Sign in to run apps</v-btn>
-                <v-btn v-else-if="!has_monitored" disabled>Checking running tools</v-btn>
                 <div v-else>
                     <v-btn
                         v-if="canLaunch(jobs, tool.id)"
@@ -86,7 +85,7 @@ const props = defineProps({
 const job = useJobStore()
 const { has_monitored, jobs } = storeToRefs(job)
 const user = useUserStore()
-const { checking_galaxy_login, is_logged_in } = storeToRefs(user)
+const { is_logged_in } = storeToRefs(user)
 const linkCopied = ref(false)
 
 function canLaunch(jobs, tool_id) {

@@ -1,3 +1,7 @@
+### nova-dashboard, 0.13.0
+
+* The user should be properly directed to login to Calvera if needed (thanks to Greg Cage, Sergey Yakubov, and John Duggan).
+
 ### nova-dashboard, 0.12.0
 
 * A banner will display on the top of the page when relevant notifications from the administrators are available (thanks to Kristin Maroun and John Duggan).
