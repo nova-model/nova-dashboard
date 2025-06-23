@@ -37,6 +37,8 @@ export const useUserStore = defineStore("user", {
                 this.is_logged_in = false
                 this.requires_galaxy_login = true
                 this.login_type = data["auth_type"]
+
+                this.userMonitorLogin()
             } else {
                 this.is_logged_in = true
                 this.requires_galaxy_login = false

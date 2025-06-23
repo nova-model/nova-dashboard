@@ -34,6 +34,12 @@ export const useJobStore = defineStore("job", {
                 url_ready: false
             }
 
+            await this.user.userStatus()
+            if (this.requires_galaxy_login) {
+                this.jobs[tool_id].state = "stopped"
+                return
+            }
+
             const response = await fetch("/api/galaxy/launch/", {
                 method: "POST",
                 headers: {
@@ -84,8 +90,6 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
-            await this.user.userStatus()
-
             const job_ids = {}
             for (const j in this.jobs) {
                 job_ids[j] = this.jobs[j].id
