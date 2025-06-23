@@ -5,7 +5,7 @@
             <v-icon v-bind="props" class="mx-1" color="warning">mdi-information-outline</v-icon>
         </template>
 
-        <v-card>
+        <v-card class="bg-white">
             This is taking longer than usual. The pulsar node may be updating its Docker image to
             the newest version of this application.
         </v-card>

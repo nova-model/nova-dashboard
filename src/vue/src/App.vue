@@ -152,9 +152,15 @@
             <v-dialog v-model="user.requires_galaxy_login" persistent width="400">
                 <v-card class="text-center">
                     <v-card-text>
-                        You need to login to Calvera to be able to launch tools. Please go to
-                        <a target="_blank" :href="galaxy_url">{{ galaxy_url }}</a> and log into
-                        Calvera using your {{ user.login_type }} credentials.
+                        <p class="mb-4">
+                            You need to login to Calvera to be able to launch tools. Please go to
+                            <a target="_blank" :href="galaxy_url">{{ galaxy_url }}</a> and log into
+                            Calvera using your {{ user.login_type }} credentials.
+                        </p>
+                        <p>
+                            If you've already logged in, then you can refresh this page to dismiss
+                            this dialog.
+                        </p>
                     </v-card-text>
                     <v-card-actions class="justify-center">
                         <v-btn width="200" margin="auto" @click="stopLoginPrompt">
