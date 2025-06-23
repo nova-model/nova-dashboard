@@ -152,7 +152,13 @@ class GalaxyManager:
                     state = tool.get_status()
                     url = tool.get_url()
                     response = connection.galaxy_instance.make_get_request(url)
-                    ready = response.status_code == 200
+                    ready = (
+                        response.status_code == 200
+                        and "Proxy target missing" not in response.text  # Avoid the proxy target missing page appearing
+                        and "Javascript Required for Galaxy" not in response.text  # Avoid the Galaxy homepage appearing
+                    )
+                    if url:
+                        print(url, response.text)
                     if state != WorkState.DELETED:
                         status_list.append(
                             {
