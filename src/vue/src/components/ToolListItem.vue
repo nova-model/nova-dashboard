@@ -23,7 +23,10 @@
             </v-btn>
         </template>
 
-        <v-list-item-title>{{ tool.name }}</v-list-item-title>
+        <v-list-item-title>
+            {{ tool.name }}
+            <span class="text-caption">{{ tool.version }}</span>
+        </v-list-item-title>
         <v-list-item-subtitle :title="tool.description">
             {{ tool.description }}
         </v-list-item-subtitle>
