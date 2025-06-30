@@ -1,3 +1,7 @@
+### nova-dashboard, 0.13.1
+
+* Tool versions are now displayed (thanks to John Duggan).
+
 ### nova-dashboard, 0.13.0
 
 * The user should be properly directed to login to Calvera if needed (thanks to Greg Cage, Sergey Yakubov, and John Duggan).

@@ -101,6 +101,7 @@ class GalaxyManager:
                         "id": tool_id,
                         "name": galaxy_tool["name"],
                         "description": self._parse_tool_help(galaxy_tool["help"]),
+                        "version": galaxy_tool["version"],
                     }
             for index, tool_id in enumerate(category.get("prototype_tools", [])):
                 if tool_id in tool_details:
@@ -110,6 +111,7 @@ class GalaxyManager:
                         "id": tool_id,
                         "name": galaxy_tool["name"],
                         "description": self._parse_tool_help(galaxy_tool["help"]),
+                        "version": galaxy_tool["version"],
                     }
 
         return tool_json
