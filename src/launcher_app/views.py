@@ -34,7 +34,7 @@ from .status import StatusManager
 
 
 def is_admin(user: AbstractBaseUser) -> bool:
-    return user.get_username() in settings.ADMINS
+    return user.get_username() in settings.NOVA_ADMINS
 
 
 @require_GET
@@ -161,8 +161,10 @@ def galaxy_user_status(request: HttpRequest) -> JsonResponse:
 
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        if "Invalid access token" in str(e):
-            return _create_galaxy_status_error(e, session_type, status_code=450)
+        status_errors = ["Invalid access token", "Please login"]
+        for status_error in status_errors:
+            if status_error in str(e):
+                return _create_galaxy_status_error(e, session_type, status_code=450)
         return _create_galaxy_error(e)
 
 
