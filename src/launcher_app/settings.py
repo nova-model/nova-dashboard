@@ -87,7 +87,7 @@ DATABASES = {
 }
 
 # List of emails that can edit the system notification
-ADMINS = json.loads(os.environ.get("ADMINISTRATOR_EMAILS", "[]"))
+NOVA_ADMINS = json.loads(os.environ.get("ADMINISTRATOR_EMAILS", "[]"))
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

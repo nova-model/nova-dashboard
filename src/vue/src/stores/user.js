@@ -11,6 +11,7 @@ export const useUserStore = defineStore("user", {
             ucams_auth_url: "/",
             xcams_auth_url: "/",
             requires_galaxy_login: false,
+            monitor_interval: null,
             login_type: "",
             ready: false
         }
@@ -38,10 +39,14 @@ export const useUserStore = defineStore("user", {
                 this.requires_galaxy_login = true
                 this.login_type = data["auth_type"]
 
-                this.userMonitorLogin()
+                if (this.monitor_interval === null) {
+                    this.userMonitorLogin()
+                }
             } else {
                 this.is_logged_in = true
                 this.requires_galaxy_login = false
+
+                this.monitor_interval = null
 
                 window.localStorage.removeItem("lastpath")
                 window.localStorage.removeItem("redirect", false)
@@ -50,7 +55,7 @@ export const useUserStore = defineStore("user", {
             this.checking_galaxy_login = false
         },
         userMonitorLogin() {
-            setInterval(() => {
+            this.monitor_interval = setInterval(() => {
                 if (this.requires_galaxy_login) {
                     this.userStatus()
                 } else {

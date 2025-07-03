@@ -1,3 +1,7 @@
+### nova-dashboard, 0.13.2
+
+* Bug fixes for logging in and out of the dashboard (thanks to Greg Cage and John Duggan).
+
 ### nova-dashboard, 0.13.1
 
 * Tool versions are now displayed (thanks to John Duggan).
