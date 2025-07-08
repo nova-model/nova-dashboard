@@ -54,10 +54,17 @@ class Service {
     }
 
     updateCountText() {
+        let aliasDownCount = 0
+        for (const alias of this.aliases) {
+            if (alias.status !== "success") {
+                aliasDownCount++
+            }
+        }
+
         if (this.aliases.length === 0) {
             this.countText = ""
         } else {
-            this.countText = ` (${this.aliases.length - this.alerts.length} of ${this.aliases.length} up)`
+            this.countText = ` (${this.aliases.length - aliasDownCount} of ${this.aliases.length} up)`
         }
     }
 
