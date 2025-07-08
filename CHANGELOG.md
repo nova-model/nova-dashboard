@@ -1,3 +1,7 @@
+### nova-dashboard, 0.13.3
+
+* Fixed a bug showing an incorrect number of available compute resources (thanks to John Duggan).
+
 ### nova-dashboard, 0.13.2
 
 * Bug fixes for logging in and out of the dashboard (thanks to Greg Cage and John Duggan).
