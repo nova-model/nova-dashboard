@@ -39,20 +39,20 @@ const props = defineProps({
 const galaxy_url = import.meta.env.VITE_GALAXY_URL
 const status_text = computed(() => {
     if (props.state === "stopping") {
-        return `Stopping job on ${galaxy_url}`
+        return `Stopping application...`
     }
 
     if (props.url && !props.urlReady) {
         is_slow.value = false
 
-        return `Waiting for application to respond`
+        return `Waiting for application to respond...`
     }
 
     if (props.submitted) {
-        return `Launching application Docker container`
+        return `Initializing application...`
     }
 
-    return `Submitting job to ${galaxy_url}`
+    return `Launching application...`
 })
 
 const is_slow = ref(false)
