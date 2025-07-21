@@ -22,7 +22,6 @@
                     <ToolStatus
                         v-if="targetJob !== null"
                         :state="targetJob.state"
-                        :submitted="targetJob.submitted"
                         :url="targetJob.url"
                     />
                     <v-progress-circular v-else indeterminate />
@@ -79,7 +78,7 @@ function monitorCallback() {
         targetJob.value = jobs.value[targetTool.value.id]
     }
 
-    if (targetJob.value !== null && targetJob.value.state === "launched") {
+    if (targetJob.value !== null && targetJob.value.state === "ready") {
         window.location.href = targetJob.value.url
     }
 }

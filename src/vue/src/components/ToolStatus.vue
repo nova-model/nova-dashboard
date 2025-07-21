@@ -22,10 +22,6 @@ const props = defineProps({
         required: true,
         type: String
     },
-    submitted: {
-        required: true,
-        type: Boolean
-    },
     url: {
         required: true,
         type: String
@@ -48,7 +44,7 @@ const status_text = computed(() => {
         return `Waiting for application to respond...`
     }
 
-    if (props.submitted) {
+    if (["new", "queued", "running"].includes(props.state) && !props.urlReady) {
         return `Initializing application...`
     }
 
@@ -59,16 +55,14 @@ const is_slow = ref(false)
 onMounted(() => {
     // Wait until the job has been fully submitted to Galaxy before counting the time it takes to launch.
     const interval = setInterval(() => {
-        if (props.submitted) {
-            // Give Galaxy 10 seconds to launch the Docker container before reporting it as slow to respond.
-            setTimeout(() => {
-                // If there is a URL, then the container started during this timeout.
-                if (!props.url) {
-                    is_slow.value = true
-                }
-            }, 10000)
-            clearInterval(interval)
-        }
+        // Give Galaxy 10 seconds to launch the Docker container before reporting it as slow to respond.
+        setTimeout(() => {
+            // If there is a URL, then the container started during this timeout.
+            if (!props.url) {
+                is_slow.value = true
+            }
+        }, 10000)
+        clearInterval(interval)
     }, 100)
 })
 </script>

@@ -46,7 +46,7 @@ const toolList = computed(() => {
             jobList.value.forEach(([job_tool_id, job]) => {
                 if (
                     tool.id === job_tool_id &&
-                    job.state === "launched" &&
+                    job.state === "ready" &&
                     !runningTools.some((target) => target.id === tool.id)
                 ) {
                     runningTools.push(tool)
