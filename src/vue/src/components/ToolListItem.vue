@@ -36,6 +36,13 @@
                 <v-btn v-if="!is_logged_in" disabled>Sign in to run apps</v-btn>
                 <v-btn v-else-if="!has_monitored" disabled>Checking login status</v-btn>
                 <div v-else>
+                    <ToolStatus
+                        v-if="isChanging(jobs, tool.id)"
+                        :state="jobs[tool.id]?.state"
+                        :url="jobs[tool.id]?.url"
+                        :url-ready="jobs[tool.id]?.url_ready"
+                    />
+
                     <v-btn
                         v-if="canLaunch(jobs, tool.id)"
                         color="primary"
@@ -56,14 +63,6 @@
                         Stop
                         <v-icon>mdi-stop</v-icon>
                     </v-btn>
-
-                    <ToolStatus
-                        v-if="isChanging(jobs, tool.id)"
-                        :state="jobs[tool.id]?.state"
-                        :submitted="jobs[tool.id]?.submitted"
-                        :url="jobs[tool.id]?.url"
-                        :url-ready="jobs[tool.id]?.url_ready"
-                    />
                 </div>
             </v-list-item-action>
         </template>
@@ -92,15 +91,17 @@ const { is_logged_in } = storeToRefs(user)
 const linkCopied = ref(false)
 
 function canLaunch(jobs, tool_id) {
-    return !["error", "launching", "launched", "stopping"].includes(jobs[tool_id]?.state)
+    return !["submitting", "new", "queued", "running", "ready", "stopping"].includes(
+        jobs[tool_id]?.state
+    )
 }
 
 function canUse(jobs, tool_id) {
-    return jobs[tool_id]?.state === "launched"
+    return jobs[tool_id]?.state === "ready"
 }
 
 function canStop(jobs, tool_id) {
-    return ["launched", "error"].includes(jobs[tool_id]?.state)
+    return ["new", "queued", "running", "ready"].includes(jobs[tool_id]?.state)
 }
 
 function getURL(tool_id) {
@@ -108,7 +109,7 @@ function getURL(tool_id) {
 }
 
 function isChanging(jobs, tool_id) {
-    return ["launching", "stopping"].includes(jobs[tool_id]?.state)
+    return ["submitting", "new", "queued", "running", "stopping"].includes(jobs[tool_id]?.state)
 }
 
 function setClipboard(text) {

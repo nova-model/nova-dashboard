@@ -14,7 +14,6 @@ from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from nova.common.job import WorkState
 from nova.galaxy import Connection, Parameters, Tool
 from requests import get as requests_get
 
@@ -22,6 +21,10 @@ from .auth import AuthManager
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+TERMINAL_STATES = ["deleted", "deleting", "error", "ok"]
+NONTERMINAL_STATES = ["deleted_new", "failed", "new", "paused", "queued", "resubmitted", "running", "upload", "waiting"]
 
 
 class GalaxyManager:
@@ -36,26 +39,16 @@ class GalaxyManager:
         if auth_manager is not None:
             self.auth_manager = auth_manager
             self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
-            self._connect_to_galaxy()
-            self.tools_to_check: Dict[str, str] = {}
             with self.connection.connect() as connection:
                 store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
                 store.persist()
-                for tool in store.recover_tools():
-                    if tool.get_status() == WorkState.RUNNING:
-                        self.tools_to_check[tool.id] = tool.get_uid()
 
-    def _connect_to_galaxy(self) -> None:
-        try:
-            with self.connection.connect() as connection:
-                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-                store.persist()
-        except Exception as e:
-            logger.error(f"Failed to connect to Galaxy: {e}")
+    def _handle_galaxy_failure(self, exception: Exception) -> None:
+        logger.error(f"Failed to connect to Galaxy: {exception}")
 
-            self.auth_manager.delete_galaxy_api_key()
+        self.auth_manager.delete_galaxy_api_key()
 
-            raise Exception(f"Failed to connect to Galaxy: {e}") from None
+        raise Exception(f"Failed to connect to Galaxy: {exception}") from None
 
     def _parse_tool_help(self, tool_help: str) -> str:
         soup = BeautifulSoup(tool_help, "html.parser")
@@ -141,38 +134,62 @@ class GalaxyManager:
                 sleep(0.1)
             return tool.get_uid()
 
-    def monitor_jobs(self, tool_ids: dict[str, str]) -> list:
+    def monitor_jobs(self, tool_ids: Dict[str, str]) -> list:
         status_list = []
-        with self.connection.connect() as connection:
-            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-            store.persist()
-            self.tools_to_check.update(tool_ids)
-            for tool_id, job_id in self.tools_to_check.items():
-                tool = Tool("")
-                tool.assign_id(new_id=job_id, data_store=store)
-                try:
-                    state = tool.get_status()
-                    url = tool.get_url()
-                    response = connection.galaxy_instance.make_get_request(url)
-                    ready = (
-                        response.status_code == 200
-                        and "Proxy target missing" not in response.text  # Avoid the proxy target missing page appearing
-                        and "Javascript Required for Galaxy" not in response.text  # Avoid the Galaxy homepage appearing
-                    )
-                    if url:
-                        print(url, response.text)
-                    if state != WorkState.DELETED:
-                        status_list.append(
-                            {
-                                "job_id": tool.get_uid(),
-                                "tool_id": tool_id,
-                                "state": state.value,
-                                "url": url,
-                                "url_ready": ready,
-                            }
-                        )
-                except Exception:  # TODO: Might try to handle these better
-                    continue
+        try:
+            with self.connection.connect() as connection:
+                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
+                store.persist()
+
+                jobs = connection.galaxy_instance.jobs.get_jobs(history_id=store.history_id, state=NONTERMINAL_STATES)
+                last_terminal_jobs = connection.galaxy_instance.jobs.get_jobs(
+                    history_id=store.history_id,
+                    limit=5,  # There are a lot of these, and we are only interested in the most recent ones.
+                    order_by="create_time",
+                    state=TERMINAL_STATES,
+                )
+                # We only want to show terminal jobs if the dashboard is already aware of them. If the user refreshes
+                # the page after a job failed, then we don't want to display the error anymore.
+                if last_terminal_jobs:
+                    for _, known_job_id in tool_ids.items():
+                        for job in last_terminal_jobs:
+                            if job["id"] == known_job_id:
+                                jobs.append(job)
+
+                for job in jobs:
+                    tool = Tool("")
+                    tool.assign_id(new_id=job["id"], data_store=store)
+                    try:
+                        state = job["state"]
+                        url = tool.get_url(max_tries=1)
+                        if url:
+                            response = connection.galaxy_instance.make_get_request(url)
+                            ready = (
+                                response.status_code == 200
+                                and "Proxy target missing"
+                                not in response.text  # Avoid the proxy target missing page appearing
+                                and "Javascript Required for Galaxy"
+                                not in response.text  # Avoid the Galaxy homepage appearing
+                            )
+                        else:
+                            url = ""
+                            ready = False
+
+                        if state != "deleted":
+                            status_list.append(
+                                {
+                                    "job_id": job["id"],
+                                    "tool_id": job["tool_id"],
+                                    "state": state,
+                                    "url": url,
+                                    "url_ready": ready,
+                                }
+                            )
+                    except Exception:  # TODO: Might try to handle these better
+                        continue
+        except Exception as e:
+            self._handle_galaxy_failure(e)
+
         return status_list
 
     def stop_job(self, tool_uid: str) -> None:

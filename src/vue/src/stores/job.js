@@ -16,11 +16,11 @@ export const useJobStore = defineStore("job", {
             has_monitored: false,
             jobs: {},
             running: false,
-            timeout: 1000,
+            timeout: 2000,
             timeout_error: false,
             timeout_duration: 60000,
             error_reset_duration: 15000,
-            monitor_task: null
+            monitor_interval: null
         }
     },
     actions: {
@@ -28,11 +28,12 @@ export const useJobStore = defineStore("job", {
             this.jobs[tool_id] = {
                 id: "",
                 start: Date.now(),
-                submitted: false,
-                state: "launching",
+                submitted: true,
+                state: "submitting",
                 url: "",
                 url_ready: false
             }
+            this.updateCalveraSpinner()
 
             await this.user.userStatus()
             if (this.requires_galaxy_login) {
@@ -54,10 +55,8 @@ export const useJobStore = defineStore("job", {
 
             if (response.status === 200) {
                 this.running = true
-                this.jobs[tool_id].submitted = true
                 const data = await response.json()
                 this.jobs[tool_id].id = data.id
-                this.restartMonitor()
             } else {
                 this.jobs[tool_id].state = "stopped"
 
@@ -67,6 +66,7 @@ export const useJobStore = defineStore("job", {
         },
         async stopJob(tool_id) {
             this.jobs[tool_id].state = "stopping"
+            this.updateCalveraSpinner()
 
             const response = await fetch("/api/galaxy/stop/", {
                 method: "POST",
@@ -81,9 +81,8 @@ export const useJobStore = defineStore("job", {
 
             if (response.status === 200) {
                 this.running = true
-                this.restartMonitor()
             } else {
-                this.jobs[tool_id].state = "launched"
+                this.jobs[tool_id].state = "ready"
 
                 const data = await response.json()
                 this.galaxy_error = `Galaxy error: ${data.error}`
@@ -119,20 +118,21 @@ export const useJobStore = defineStore("job", {
                         }
                     }
 
-                    if (job.state === "error") {
+                    this.jobs[job.tool_id].id = job.job_id
+                    if (!["ready", "stopping"].includes(this.jobs[job.tool_id].state)) {
+                        this.jobs[job.tool_id].state = job.state
+                    }
+
+                    if (["deleted", "deleting", "ok"].includes(job.state)) {
+                        delete this.jobs[job.tool_id]
+                    } else if (job.state === "error") {
                         hasErrors = true
                         this.galaxy_error = `Galaxy error: ${job.tool_id} is in an error state`
 
-                        if (this.jobs[job.tool_id].state !== "stopping") {
-                            this.jobs[job.tool_id].id = job.job_id
-                            this.jobs[job.tool_id].state = "error"
-                            this.jobs[job.tool_id].submitted = false
-
-                            // Clear the launch error
-                            setTimeout(() => {
-                                delete this.jobs[job.tool_id]
-                            }, this.error_reset_duration)
-                        }
+                        // Clear the launch error
+                        setTimeout(() => {
+                            delete this.jobs[job.tool_id]
+                        }, this.error_reset_duration)
                     }
 
                     if (job.url && !this.jobs[job.tool_id].url_ready) {
@@ -143,7 +143,7 @@ export const useJobStore = defineStore("job", {
                     if (
                         job.state === "running" &&
                         this.jobs[job.tool_id].state !== "stopping" &&
-                        this.jobs[job.tool_id].state !== "launched" &&
+                        this.jobs[job.tool_id].state !== "ready" &&
                         job.url_ready
                     ) {
                         this.user.getAutoopen()
@@ -155,9 +155,7 @@ export const useJobStore = defineStore("job", {
                             window.open(job.url, "_blank")
                         }
 
-                        this.jobs[job.tool_id].id = job.job_id
-                        this.jobs[job.tool_id].state = "launched"
-                        this.jobs[job.tool_id].submitted = false
+                        this.jobs[job.tool_id].state = "ready"
                     }
                 }
 
@@ -166,16 +164,16 @@ export const useJobStore = defineStore("job", {
                     const job = this.jobs[tool_id]
 
                     if (
-                        job.state !== "launching" &&
+                        !["submitting", "new", "queued", "running"].includes(job.state) &&
                         !data.jobs.some((target) => target.job_id === job.id)
                     ) {
                         // Tool stopped gracefully
                         delete this.jobs[tool_id]
                     } else if (
-                        !data.jobs.some((target) => target.job_id === job.id) &&
+                        !["error", "running", "ready"].includes(job.state) &&
                         Date.now() - job.start > this.timeout_duration
                     ) {
-                        // The job hasn't starting reporting its status in one minute, something unexpected has happened.
+                        // The job hasn't started in one minute, something unexpected has happened.
                         job.state = "error"
 
                         this.timeout_error = true
@@ -194,27 +192,11 @@ export const useJobStore = defineStore("job", {
                 this.galaxy_error = `Galaxy error: ${data.error}`
             }
 
-            // Turn on the spinner in the footer if any job is being started or stopped
-            this.running = Object.values(this.jobs).some((job) =>
-                ["launching", "stopping"].includes(job.state)
-            )
+            this.updateCalveraSpinner()
 
             if (this.callback !== undefined && this.callback !== null) {
                 this.callback()
             }
-
-            // Monitor quickly if a job is starting or stopping
-            // Delay the monitor if nothing is starting or stopping to avoid spamming the server
-            if (this.running) {
-                this.timeout = 1000
-            } else if (this.timeout < 15000) {
-                this.timeout += 1000
-            }
-
-            if (this.monitor_task) {
-                window.clearTimeout(this.monitor_task)
-            }
-            this.monitor_task = setTimeout(this.monitorJobs, this.timeout)
 
             // nextTick ensures that any updates to the UI from this monitoring loop have been committed.
             // Setting this flag will allow users to launch tools, which should only be possible after
@@ -223,14 +205,24 @@ export const useJobStore = defineStore("job", {
                 this.has_monitored = true
             })
         },
-        restartMonitor() {
-            this.timeout = 1000
-            this.monitorJobs()
-        },
         startMonitor(allow_autoopen, callback) {
             this.allow_autoopen = allow_autoopen
             this.callback = callback
-            this.monitorJobs()
+
+            if (this.monitor_interval === null) {
+                this.monitorJobs()
+            } else {
+                window.clearInterval(this.monitor_interval)
+                this.monitor_interval = null
+            }
+
+            this.monitor_interval = window.setInterval(this.monitorJobs, this.timeout)
+        },
+        updateCalveraSpinner() {
+            // Turn on the spinner in the footer if any job is being started or stopped
+            this.running = Object.values(this.jobs).some((job) => {
+                return ["submitting", "new", "queued", "running", "stopping"].includes(job.state)
+            })
         }
     }
 })

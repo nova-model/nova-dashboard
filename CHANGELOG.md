@@ -1,3 +1,7 @@
+### nova-dashboard, 0.14.0
+
+* The dashboard now listens to all Galaxy job states (thanks to John Duggan).
+
 ### nova-dashboard, 0.13.3
 
 * Fixed a bug showing an incorrect number of available compute resources (thanks to John Duggan).
