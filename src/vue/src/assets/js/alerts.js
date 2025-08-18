@@ -18,6 +18,53 @@ class Alias {
     }
 }
 
+const INSTRUMENT_ALIASES = [
+    new Alias("HFIR-CG1A"),
+    new Alias("HFIR-CG1B"),
+    new Alias("HFIR-CG1D"),
+    new Alias("HFIR-CG2"),
+    new Alias("HFIR-CG3"),
+    new Alias("HFIR-CG4B"),
+    new Alias("HFIR-CG4C"),
+    new Alias("HFIR-CG4D"),
+    new Alias("HFIR-HB1"),
+    new Alias("HFIR-HB1A"),
+    new Alias("HFIR-HB2A"),
+    new Alias("HFIR-HB2B"),
+    new Alias("HFIR-HB2C"),
+    new Alias("HFIR-HB3"),
+    new Alias("HFIR-HB3A"),
+    new Alias("HFIR-NOWG"),
+    new Alias("HFIR-NOWV"),
+    new Alias("SNS-ARCS"),
+    new Alias("SNS-BL0"),
+    new Alias("SNS-BSS"),
+    new Alias("SNS-CNCS"),
+    new Alias("SNS-CORELLI"),
+    new Alias("SNS-EQSANS"),
+    new Alias("SNS-FNPB"),
+    new Alias("SNS-HYS"),
+    new Alias("SNS-LENS"),
+    new Alias("SNS-MANDI"),
+    new Alias("SNS-NOM"),
+    new Alias("SNS-NOWB"),
+    new Alias("SNS-NOWD"),
+    new Alias("SNS-NOWG"),
+    new Alias("SNS-NOWW"),
+    new Alias("SNS-NOWX"),
+    new Alias("SNS-NSE"),
+    new Alias("SNS-PG3"),
+    new Alias("SNS-REF_L"),
+    new Alias("SNS-REF_M"),
+    new Alias("SNS-SEQ"),
+    new Alias("SNS-SNAP"),
+    new Alias("SNS-TOPAZ"),
+    new Alias("SNS-USANS"),
+    new Alias("SNS-VENUS"),
+    new Alias("SNS-VIS"),
+    new Alias("SNS-VULCAN")
+]
+
 // Tracks the status of a service.
 class Service {
     constructor(name, aliases) {
@@ -36,6 +83,10 @@ class Service {
         this.alerts = []
         this.countText = ""
         this.status = "success"
+
+        for (const alias of this.aliases) {
+            alias.reset()
+        }
     }
 
     addAlert(alert) {
@@ -100,6 +151,7 @@ export default class AlertManager {
     async initServices() {
         this.services = {
             infrastructure: new Service("Infrastructure"),
+            instrument_data: new Service("Instrument Data", INSTRUMENT_ALIASES),
             compute: new Service("Compute Resources", await this.getAliases("compute")),
             live_data: new Service("Live Data"),
             documentation: new Service("Documentation")

@@ -1,3 +1,7 @@
+### nova-dashboard, 0.15.0
+
+* The dashboard displays alerts when instrument directories are not mounted properly on our compute resources (thanks to John Duggan).
+
 ### nova-dashboard, 0.14.0
 
 * The dashboard now listens to all Galaxy job states (thanks to John Duggan).
