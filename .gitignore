@@ -166,3 +166,4 @@ cython_debug/
 junit.xml
 
 tools.json
+prototype_tools.json

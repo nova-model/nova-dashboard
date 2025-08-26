@@ -1,3 +1,7 @@
+### nova-dashboard, 0.16.0
+
+* Auto-launched tools with a datafile input are run in a separate Galaxy history (thanks to John Duggan).
+
 ### nova-dashboard, 0.15.0
 
 * The dashboard displays alerts when instrument directories are not mounted properly on our compute resources (thanks to John Duggan).
