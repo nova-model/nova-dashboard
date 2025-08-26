@@ -40,8 +40,7 @@ class GalaxyManager:
             self.auth_manager = auth_manager
             self.connection = Connection(settings.GALAXY_URL, self.auth_manager.get_galaxy_api_key())
             with self.connection.connect() as connection:
-                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-                store.persist()
+                connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
 
     def _handle_galaxy_failure(self, exception: Exception) -> None:
         logger.error(f"Failed to connect to Galaxy: {exception}")
@@ -109,20 +108,40 @@ class GalaxyManager:
 
         return tool_json
 
+    def ingest_file(self, connection: Connection, file_path: str) -> Optional[str]:
+        file_store = connection.create_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_data")
+        load_data = Tool("neutrons_register")
+        load_params = Parameters()
+        load_params.add_input("series_0|input", file_path)
+        outputs = load_data.run(file_store, load_params)
+
+        try:
+            return outputs.data[0].id
+        except Exception:
+            return None
+
     def launch_job(self, tool_id: str, inputs: dict[str, str]) -> str:
         with self.connection.connect() as connection:
-            store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-            file_store = connection.create_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_data")
+            if inputs:
+                store = connection.create_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_datafile_tools")
+            else:
+                store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
 
             tool = Tool(tool_id)
 
             launch_params = Parameters()
             for key, value in inputs.items():
-                load_data = Tool("neutrons_register")
-                load_params = Parameters()
-                load_params.add_input("series_0|input", value)
-                outputs = load_data.run(file_store, load_params)
-                launch_params.add_input(key, {"src": "hda", "id": outputs.data[0].id})
+                if value.startswith("file_"):
+                    # File will be ingested and contents will be passed to the tool.
+                    id = self.ingest_file(connection, value)
+                    if id is None:
+                        raise ValueError(
+                            f"File for parameter '{key}' failed to register to Galaxy. "
+                            "The filepath is likely malformed or nonexistent."
+                        )
+                    launch_params.add_input(key, {"src": "hda", "id": id})
+                else:
+                    launch_params.add_input(key, value)
 
             # This allows us to test the error monitoring at will on the test instance
             if tool_id == "neutrons_remote_command":
@@ -139,9 +158,14 @@ class GalaxyManager:
         try:
             with self.connection.connect() as connection:
                 store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-                store.persist()
+                datafile_tools_store = connection.create_data_store(
+                    name=f"{settings.GALAXY_HISTORY_NAME}_datafile_tools"
+                )
 
                 jobs = connection.galaxy_instance.jobs.get_jobs(history_id=store.history_id, state=NONTERMINAL_STATES)
+                datafile_jobs = connection.galaxy_instance.jobs.get_jobs(
+                    history_id=datafile_tools_store.history_id, state=NONTERMINAL_STATES
+                )
                 last_terminal_jobs = connection.galaxy_instance.jobs.get_jobs(
                     history_id=store.history_id,
                     limit=5,  # There are a lot of these, and we are only interested in the most recent ones.
@@ -155,6 +179,10 @@ class GalaxyManager:
                         for job in last_terminal_jobs:
                             if job["id"] == known_job_id:
                                 jobs.append(job)
+
+                for job in datafile_jobs:
+                    job["is_datafile_tool"] = True
+                    jobs.append(job)
 
                 for job in jobs:
                     tool = Tool("")
@@ -178,6 +206,7 @@ class GalaxyManager:
                         if state != "deleted":
                             status_list.append(
                                 {
+                                    "is_datafile_tool": job.get("is_datafile_tool", False),
                                     "job_id": job["id"],
                                     "tool_id": job["tool_id"],
                                     "state": state,
@@ -195,7 +224,6 @@ class GalaxyManager:
     def stop_job(self, tool_uid: str) -> None:
         with self.connection.connect() as connection:
             store = connection.create_data_store(name=settings.GALAXY_HISTORY_NAME)
-            store.persist()
             tool = Tool("")
             tool.assign_id(new_id=tool_uid, data_store=store)
             tool.cancel()

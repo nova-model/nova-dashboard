@@ -48,7 +48,7 @@ const props = defineProps({
 })
 
 const job = useJobStore()
-const { jobs } = storeToRefs(job)
+const { all_jobs, jobs } = storeToRefs(job)
 const user = useUserStore()
 const { checking_galaxy_login, is_logged_in, ucams_auth_url, xcams_auth_url } = storeToRefs(user)
 const route = useRoute()
@@ -58,27 +58,40 @@ const foundInGalaxy = ref(false)
 const targetJob = ref(null)
 const targetTool = ref(null)
 let inputs = {}
+let hasInputs = false
+let targetJobId = null
 
 function monitorCallback() {
     if (!is_logged_in || checking_galaxy_login.value || targetTool.value === null) {
         return
     }
 
-    for (const id in jobs.value) {
-        if (id === targetTool.value.id && jobs.value[id].state !== "stopped") {
-            foundInGalaxy.value = true
-            targetJob.value = jobs.value[id]
+    if (hasInputs) {
+        for (const job of all_jobs.value) {
+            if (job.job_id === targetJobId) {
+                targetJob.value = job
+            }
+        }
+    } else {
+        for (const id in jobs.value) {
+            if (id === targetTool.value.id && jobs.value[id].state !== "stopped") {
+                foundInGalaxy.value = true
+                targetJob.value = jobs.value[id]
+            }
+        }
+
+        // We are logged in, the tool has been confirmed to exist, and we didn't find any job for it in Galaxy,
+        // so we can launch it here.
+        if (targetJob.value === null) {
+            job.launchJob(targetTool.value.id, inputs)
+            targetJob.value = jobs.value[targetTool.value.id]
         }
     }
 
-    // We are logged in, the tool has been confirmed to exist, and we didn't find any job for it in Galaxy,
-    // so we can launch it here.
-    if (targetJob.value === null) {
-        job.launchJob(targetTool.value.id, inputs)
-        targetJob.value = jobs.value[targetTool.value.id]
-    }
-
-    if (targetJob.value !== null && targetJob.value.state === "ready") {
+    if (
+        targetJob.value !== null &&
+        (targetJob.value.state === "ready" || targetJob.value.url_ready)
+    ) {
         window.location.href = targetJob.value.url
     }
 }
@@ -103,12 +116,20 @@ function findTargetTool() {
 
 onMounted(async () => {
     inputs = route.query
+    if (Object.keys(inputs).length > 0) {
+        hasInputs = true
+    }
+
     targetTool.value = findTargetTool()
     if (targetTool.value === null) {
         router.replace({
             name: "not-found",
             params: { catchAll: route.path.substring(1).split("/") }
         })
+    }
+
+    if (hasInputs) {
+        targetJobId = await job.launchJob(targetTool.value.id, inputs)
     }
 
     job.startMonitor(false, monitorCallback)

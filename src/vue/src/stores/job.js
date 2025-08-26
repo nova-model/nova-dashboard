@@ -10,6 +10,7 @@ export const useJobStore = defineStore("job", {
     state: () => {
         return {
             user: useUserStore(),
+            all_jobs: [],
             allow_autoopen: true,
             callback: null,
             galaxy_error: "",
@@ -24,6 +25,15 @@ export const useJobStore = defineStore("job", {
         }
     },
     actions: {
+        showErrorWithTimeout(message, tool_id) {
+            this.timeout_error = true
+            setTimeout(() => {
+                delete this.jobs[tool_id]
+                this.timeout_error = false
+            }, this.error_reset_duration)
+
+            this.galaxy_error = message
+        },
         async launchJob(tool_id, inputs) {
             this.jobs[tool_id] = {
                 id: "",
@@ -57,11 +67,21 @@ export const useJobStore = defineStore("job", {
                 this.running = true
                 const data = await response.json()
                 this.jobs[tool_id].id = data.id
+
+                return data.id
             } else {
                 this.jobs[tool_id].state = "stopped"
 
                 const data = await response.json()
-                this.galaxy_error = `Galaxy error: ${data.error}`
+                const message = `Galaxy error: ${data.error}`
+                if (Object.keys(inputs).length > 0) {
+                    this.galaxy_error = message
+                    this.timeout_error = true
+                } else {
+                    this.showErrorWithTimeout(message, tool_id)
+                }
+
+                return null
             }
         },
         async stopJob(tool_id) {
@@ -85,7 +105,7 @@ export const useJobStore = defineStore("job", {
                 this.jobs[tool_id].state = "ready"
 
                 const data = await response.json()
-                this.galaxy_error = `Galaxy error: ${data.error}`
+                this.showErrorWithTimeout(`Galaxy error: ${data.error}`, tool_id)
             }
         },
         async monitorJobs() {
@@ -106,8 +126,14 @@ export const useJobStore = defineStore("job", {
             if (response.status === 200) {
                 let hasErrors = false
 
+                this.all_jobs = data.jobs
+
                 // Look for jobs that are running
                 for (const job of data.jobs) {
+                    if (job.is_datafile_tool) {
+                        continue
+                    }
+
                     if (!(job.tool_id in this.jobs)) {
                         this.jobs[job.tool_id] = {
                             id: job.job_id,
@@ -176,12 +202,10 @@ export const useJobStore = defineStore("job", {
                         // The job hasn't started in one minute, something unexpected has happened.
                         job.state = "error"
 
-                        this.timeout_error = true
-                        setTimeout(() => {
-                            delete this.jobs[tool_id]
-                            this.timeout_error = false
-                        }, this.error_reset_duration)
-                        this.galaxy_error = `Galaxy error: Tool failed to respond within one minute. This may be due to an outage on ${galaxy_url}.`
+                        this.showErrorWithTimeout(
+                            `Galaxy error: Tool failed to respond within one minute. This may be due to an outage on ${galaxy_url}.`,
+                            tool_id
+                        )
                     }
                 })
 
