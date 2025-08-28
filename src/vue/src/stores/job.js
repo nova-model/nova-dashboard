@@ -196,7 +196,7 @@ export const useJobStore = defineStore("job", {
                         // Tool stopped gracefully
                         delete this.jobs[tool_id]
                     } else if (
-                        !["error", "running", "ready"].includes(job.state) &&
+                        !["error", "running", "ready", "stopping"].includes(job.state) &&
                         Date.now() - job.start > this.timeout_duration
                     ) {
                         // The job hasn't started in one minute, something unexpected has happened.

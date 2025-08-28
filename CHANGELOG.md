@@ -1,3 +1,7 @@
+### nova-dashboard, 0.16.1
+
+* Incorrect timeout errors should no longer be displayed when stopping tools (thanks to John Duggan).
+
 ### nova-dashboard, 0.16.0
 
 * Auto-launched tools with a datafile input are run in a separate Galaxy history (thanks to John Duggan).
