@@ -69,15 +69,6 @@ export const useUserStore = defineStore("user", {
         toggleAutoopen() {
             this.autoopen = !this.autoopen
             window.localStorage.setItem("autoopen", this.autoopen)
-        },
-        resetUser() {
-            this.autoopen = false
-            this.given_name = null
-            this.is_logged_in = false
-            this.ucams_auth_url = "/"
-            this.xcams_auth_url = "/"
-            this.requires_galaxy_login = false
-            this.login_type = ""
         }
     }
 })
