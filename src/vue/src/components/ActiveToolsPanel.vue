@@ -5,12 +5,22 @@
             <v-icon>mdi-laptop</v-icon>
         </v-badge>
 
-        <v-menu v-if="toolList.length > 0" activator="parent" :close-on-content-click="false">
+        <v-menu
+            v-if="toolList.length > 0"
+            :close-on-content-click="false"
+            activator="parent"
+            max-width="1200"
+        >
             <v-card>
                 <v-card-title>Active Tools</v-card-title>
 
                 <v-list>
-                    <ToolListItem v-for="(tool, index) in toolList" :key="index" :tool="tool" />
+                    <ToolListItem
+                        v-for="(data, index) in toolList"
+                        :key="index"
+                        :tool="data.tool"
+                        :job="data.job"
+                    />
                 </v-list>
             </v-card>
         </v-menu>
@@ -26,7 +36,7 @@ import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
 
 const job = useJobStore()
-const { jobs } = storeToRefs(job)
+const { all_jobs, jobs } = storeToRefs(job)
 
 const jobList = computed(() => {
     return Object.entries(jobs.value)
@@ -37,10 +47,10 @@ const toolList = computed(() => {
 
     // Returns all tools connected with a Galaxy job
     const runningTools = []
-    Object.values(tools).forEach((tool_category) => {
-        let all_tools = tool_category.tools
-        if (tool_category.prototype_tools !== undefined) {
-            all_tools = all_tools.concat(tool_category.prototype_tools)
+    Object.values(tools).forEach((toolCategory) => {
+        let all_tools = toolCategory.tools
+        if (toolCategory.prototype_tools !== undefined) {
+            all_tools = all_tools.concat(toolCategory.prototype_tools)
         }
         all_tools.forEach((tool) => {
             jobList.value.forEach(([job_tool_id, job]) => {
@@ -49,7 +59,13 @@ const toolList = computed(() => {
                     job.state === "ready" &&
                     !runningTools.some((target) => target.id === tool.id)
                 ) {
-                    runningTools.push(tool)
+                    runningTools.push({ job: null, tool: tool })
+                }
+            })
+
+            all_jobs.value.forEach((job) => {
+                if (job.is_datafile_tool && tool.id === job.tool_id && job.url_ready) {
+                    runningTools.push({ job: job, tool: tool })
                 }
             })
         })

@@ -3,13 +3,13 @@
     <v-list-item>
         <template v-slot:prepend>
             <v-btn
-                :href="getURL(tool.id)"
+                :href="getAutolaunchURL(tool.id)"
                 class="mr-2"
                 size="x-small"
                 icon
                 rounded
                 tile
-                @click.prevent="setClipboard(getURL(tool.id))"
+                @click.prevent="setClipboard(getAutolaunchURL(tool.id))"
             >
                 <v-icon>mdi-content-copy</v-icon>
 
@@ -27,8 +27,14 @@
             {{ tool.name }}
             <span class="text-caption">{{ tool.version }}</span>
         </v-list-item-title>
-        <v-list-item-subtitle :title="tool.description">
+        <v-list-item-subtitle v-if="props.job === null" :title="tool.description">
             {{ tool.description }}
+        </v-list-item-subtitle>
+        <v-list-item-subtitle
+            v-else-if="props.job.is_datafile_tool"
+            :title="parseParams(props.job.parameters)"
+        >
+            Autolaunched with parameters: {{ parseParams(props.job.parameters) }}
         </v-list-item-subtitle>
 
         <template v-slot:append>
@@ -37,28 +43,32 @@
                 <v-btn v-else-if="!has_monitored" disabled>Checking login status</v-btn>
                 <div v-else>
                     <ToolStatus
-                        v-if="isChanging(jobs, tool.id)"
+                        v-if="isChanging(jobs, tool.id) && props.job === null"
                         :state="jobs[tool.id]?.state"
                         :url="jobs[tool.id]?.url"
                         :url-ready="jobs[tool.id]?.url_ready"
                     />
 
                     <v-btn
-                        v-if="canLaunch(jobs, tool.id)"
+                        v-if="canLaunch(jobs, tool.id) && props.job === null"
                         color="primary"
                         @click="job.launchJob(tool.id)"
                     >
                         Start
                         <v-icon>mdi-play</v-icon>
                     </v-btn>
-                    <v-btn v-if="canUse(jobs, tool.id)" :href="jobs[tool.id]?.url" target="_blank">
+                    <v-btn
+                        v-if="canUse(jobs, tool.id) || props.job !== null"
+                        :href="props.job === null ? jobs[tool.id]?.url : props.job.url"
+                        target="_blank"
+                    >
                         Open
                         <v-icon>mdi-open-in-new</v-icon>
                     </v-btn>
                     <v-btn
-                        v-if="canStop(jobs, tool.id)"
+                        v-if="canStop(jobs, tool.id) || props.job !== null"
                         color="error"
-                        @click="job.stopJob(tool.id)"
+                        @click="stopJob()"
                     >
                         Stop
                         <v-icon>mdi-stop</v-icon>
@@ -78,6 +88,11 @@ import { useJobStore } from "@/stores/job"
 import { useUserStore } from "@/stores/user"
 
 const props = defineProps({
+    job: {
+        default: null,
+        required: false,
+        type: [Object, null]
+    },
     tool: {
         required: true,
         type: Object
@@ -104,12 +119,28 @@ function canStop(jobs, tool_id) {
     return ["new", "queued", "running", "ready"].includes(jobs[tool_id]?.state)
 }
 
-function getURL(tool_id) {
-    return window.location.origin + `/launch/${tool_id}`
-}
-
 function isChanging(jobs, tool_id) {
     return ["submitting", "new", "queued", "running", "stopping"].includes(jobs[tool_id]?.state)
+}
+
+function stopJob() {
+    if (props.job === null) {
+        job.stopJob(jobs.value[props.tool.id].id, props.tool.id)
+    } else {
+        job.stopJob(props.job.job_id)
+    }
+}
+
+function parseParams(parameters) {
+    return Object.keys(props.job.parameters)
+        .map(function (key) {
+            return `${key}: ${props.job.parameters[key]}`
+        })
+        .join(", ")
+}
+
+function getAutolaunchURL(tool_id) {
+    return window.location.origin + `/launch/${tool_id}`
 }
 
 function setClipboard(text) {

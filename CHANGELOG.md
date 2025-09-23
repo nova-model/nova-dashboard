@@ -1,3 +1,7 @@
+### nova-dashboard, 0.17.0
+
+* Auto-launched tools with a datafile input can now be managed through the dashboard (thanks to John Duggan).
+
 ### nova-dashboard, 0.16.1
 
 * Incorrect timeout errors should no longer be displayed when stopping tools (thanks to John Duggan).

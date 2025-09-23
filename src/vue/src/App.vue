@@ -162,11 +162,6 @@
                             this dialog.
                         </p>
                     </v-card-text>
-                    <v-card-actions class="justify-center">
-                        <v-btn width="200" margin="auto" @click="stopLoginPrompt">
-                            Cancel Login
-                        </v-btn>
-                    </v-card-actions>
                 </v-card>
             </v-dialog>
         </v-main>
@@ -218,10 +213,6 @@ onMounted(async () => {
 
 function toggleDrawer() {
     drawer.value = !drawer.value
-}
-
-function stopLoginPrompt() {
-    user.resetUser()
 }
 
 function logout() {

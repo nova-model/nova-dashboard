@@ -84,9 +84,11 @@ export const useJobStore = defineStore("job", {
                 return null
             }
         },
-        async stopJob(tool_id) {
-            this.jobs[tool_id].state = "stopping"
-            this.updateCalveraSpinner()
+        async stopJob(job_id, tool_id) {
+            if (tool_id !== undefined) {
+                this.jobs[tool_id].state = "stopping"
+                this.updateCalveraSpinner()
+            }
 
             const response = await fetch("/api/galaxy/stop/", {
                 method: "POST",
@@ -95,13 +97,13 @@ export const useJobStore = defineStore("job", {
                     "X-CSRFToken": Cookies.get("csrftoken")
                 },
                 body: JSON.stringify({
-                    job_id: this.jobs[tool_id].id
+                    job_id: job_id
                 })
             })
 
             if (response.status === 200) {
                 this.running = true
-            } else {
+            } else if (tool_id !== undefined) {
                 this.jobs[tool_id].state = "ready"
 
                 const data = await response.json()

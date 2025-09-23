@@ -204,16 +204,22 @@ class GalaxyManager:
                             ready = False
 
                         if state != "deleted":
-                            status_list.append(
-                                {
-                                    "is_datafile_tool": job.get("is_datafile_tool", False),
-                                    "job_id": job["id"],
-                                    "tool_id": job["tool_id"],
-                                    "state": state,
-                                    "url": url,
-                                    "url_ready": ready,
-                                }
-                            )
+                            data = {
+                                "is_datafile_tool": job.get("is_datafile_tool", False),
+                                "job_id": job["id"],
+                                "tool_id": job["tool_id"],
+                                "state": state,
+                                "url": url,
+                                "url_ready": ready,
+                            }
+                            if data["is_datafile_tool"]:
+                                parameters = connection.galaxy_instance.jobs.show_job(data["job_id"]).get("params", {})
+                                # Clean up some Galaxy nonsense
+                                for key in ["chromInfo", "dbkey", "__input_ext"]:
+                                    parameters.pop(key, None)
+                                data["parameters"] = parameters
+
+                            status_list.append(data)
                     except Exception:  # TODO: Might try to handle these better
                         continue
         except Exception as e:
