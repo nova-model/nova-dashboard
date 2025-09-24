@@ -129,6 +129,9 @@ XCAMS_SCOPES = os.environ["XCAMS_SCOPES"]
 GALAXY_URL = os.environ["GALAXY_URL"]
 GALAXY_API_KEY_ENDPOINT = os.environ["GALAXY_API_KEY_ENDPOINT"]
 GALAXY_HISTORY_NAME = os.environ.get("GALAXY_HISTORY_NAME", "launcher_history")
+GALAXY_UCAMS_URL = os.environ.get("GALAXY_UCAMS_URL", "https://calvera-test.ornl.gov/authnz/azure/login")
+GALAXY_XCAMS_URL = os.environ.get("GALAXY_XCAMS_URL", "https://calvera-test.ornl.gov/authnz/pingfed/login")
+NOVA_LOGIN_COOKIE_NAME = os.environ.get("NOVA_LOGIN_COOKIE_NAME", "galaxy-nova-login")
 
 # System status settings
 ALERTS_ENVIRONMENTS = json.loads(os.environ.get("ALERTS_ENVIRONMENTS", "[]"))

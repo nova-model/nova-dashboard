@@ -60,7 +60,9 @@ def ucams_redirect(request: HttpRequest) -> HttpResponseRedirect:
 
     auth_manager.login(request, email, given_name)
 
-    return redirect("/")
+    response = redirect(settings.GALAXY_UCAMS_URL)
+    response.set_cookie(settings.NOVA_LOGIN_COOKIE_NAME, "true", 30, httponly=True, secure=True, samesite="None")
+    return response
 
 
 @require_GET
@@ -73,7 +75,9 @@ def xcams_redirect(request: HttpRequest) -> HttpResponseRedirect:
 
     auth_manager.login(request, email, given_name)
 
-    return redirect("/")
+    response = redirect(settings.GALAXY_XCAMS_URL)
+    response.set_cookie(settings.NOVA_LOGIN_COOKIE_NAME, "true", 30, httponly=True, secure=True, samesite="None")
+    return response
 
 
 @require_GET
