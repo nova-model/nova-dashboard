@@ -1,4 +1,4 @@
-### nova-dashboard, 0.16.2
+### nova-dashboard, 0.17.1
 
 * After logging, will automatically redirect to Galaxy to log in there (which should redirect back afterwards). (thanks to Greg Cage).
 
