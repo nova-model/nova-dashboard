@@ -5,6 +5,7 @@ specified in urls.py file.
 """
 
 import json
+import urllib.parse
 from importlib.resources import open_text
 from typing import Any
 
@@ -59,16 +60,9 @@ def ucams_redirect(request: HttpRequest) -> HttpResponseRedirect:
     given_name = user_info["given_name"]
 
     auth_manager.login(request, email, given_name)
+    external_redirect = f"{request.scheme}://{request.get_host()}/"
 
-    response = redirect(settings.GALAXY_UCAMS_URL)
-    response.set_cookie(
-        settings.NOVA_LOGIN_COOKIE_NAME,
-        f"{request.scheme}://{request.get_host()}/",
-        30,
-        httponly=True,
-        secure=True,
-        samesite="None",
-    )
+    response = redirect(f"{settings.GALAXY_UCAMS_URL}?external_redirect={urllib.parse.quote_plus(external_redirect)}")
     return response
 
 
@@ -81,16 +75,9 @@ def xcams_redirect(request: HttpRequest) -> HttpResponseRedirect:
     given_name = user_info["givenName"]
 
     auth_manager.login(request, email, given_name)
+    external_redirect = f"{request.scheme}://{request.get_host()}/"
 
-    response = redirect(settings.GALAXY_XCAMS_URL)
-    response.set_cookie(
-        settings.NOVA_LOGIN_COOKIE_NAME,
-        f"{request.scheme}://{request.get_host()}/",
-        30,
-        httponly=True,
-        secure=True,
-        samesite="None",
-    )
+    response = redirect(f"{settings.GALAXY_XCAMS_URL}?external_redirect={urllib.parse.quote_plus(external_redirect)}")
     return response
 
 
