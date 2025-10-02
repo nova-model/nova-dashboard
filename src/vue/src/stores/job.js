@@ -25,10 +25,36 @@ export const useJobStore = defineStore("job", {
         }
     },
     actions: {
+        async handleError(response, timeout, tool_id) {
+            let message = ""
+
+            if (Cookies.get("sessionid") === undefined) {
+                // The users login has expired and they must login to use the site. Refreshing makes it clear that they need to sign in without showing large error messages.
+                window.location.reload()
+            } else {
+                try {
+                    // Most of our views will return a JSON with a detailed error message.
+                    const data = await response.json()
+                    message = `Galaxy error: ${data.error}`
+                } catch {
+                    // If we don't get a JSON back, then we fallback to a generic error message.
+                    message =
+                        "Galaxy failed to process your request. Please try again in a few minutes."
+                }
+            }
+
+            if (timeout) {
+                this.showErrorWithTimeout(message, tool_id)
+            } else {
+                this.galaxy_error = message
+            }
+        },
         showErrorWithTimeout(message, tool_id) {
             this.timeout_error = true
             setTimeout(() => {
-                delete this.jobs[tool_id]
+                if (tool_id !== undefined) {
+                    delete this.jobs[tool_id]
+                }
                 this.timeout_error = false
             }, this.error_reset_duration)
 
@@ -72,14 +98,7 @@ export const useJobStore = defineStore("job", {
             } else {
                 this.jobs[tool_id].state = "stopped"
 
-                const data = await response.json()
-                const message = `Galaxy error: ${data.error}`
-                if (Object.keys(inputs).length > 0) {
-                    this.galaxy_error = message
-                    this.timeout_error = true
-                } else {
-                    this.showErrorWithTimeout(message, tool_id)
-                }
+                await this.handleError(response, Object.keys(inputs).length <= 0, tool_id)
 
                 return null
             }
@@ -106,8 +125,7 @@ export const useJobStore = defineStore("job", {
             } else if (tool_id !== undefined) {
                 this.jobs[tool_id].state = "ready"
 
-                const data = await response.json()
-                this.showErrorWithTimeout(`Galaxy error: ${data.error}`, tool_id)
+                await this.handleError(response, true, tool_id)
             }
         },
         async monitorJobs() {
@@ -123,9 +141,10 @@ export const useJobStore = defineStore("job", {
                 },
                 body: JSON.stringify({ tool_ids: job_ids })
             })
-            const data = await response.json()
 
             if (response.status === 200) {
+                const data = await response.json()
+
                 let hasErrors = false
 
                 this.all_jobs = data.jobs
@@ -215,7 +234,7 @@ export const useJobStore = defineStore("job", {
                     this.galaxy_error = ""
                 }
             } else {
-                this.galaxy_error = `Galaxy error: ${data.error}`
+                await this.handleError(response, false)
             }
 
             this.updateCalveraSpinner()

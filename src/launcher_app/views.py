@@ -10,7 +10,6 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.exceptions import PermissionDenied
 from django.http import (
@@ -134,9 +133,13 @@ def _create_galaxy_status_error(exception: Exception, auth_type: str, status_cod
     return JsonResponse({"error": str(exception), "auth_type": auth_type.upper()}, status=status_code)
 
 
-@login_required
 @require_POST
 def galaxy_launch(request: HttpRequest) -> HttpResponse:
+    # Normally, we would use a @login_required decorator in Django. This forces a redirect, though, which we don't want
+    # to happen since this view (and others like it below) are only accessed through fetch requests.
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+
     try:
         auth_manager = AuthManager(request)
         galaxy_manager = GalaxyManager(auth_manager)
@@ -149,9 +152,11 @@ def galaxy_launch(request: HttpRequest) -> HttpResponse:
         return _create_galaxy_error(e)
 
 
-@login_required
 @require_GET
 def galaxy_user_status(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+
     session_type = ""
     try:
         auth_manager = AuthManager(request)
@@ -168,9 +173,11 @@ def galaxy_user_status(request: HttpRequest) -> JsonResponse:
         return _create_galaxy_error(e)
 
 
-@login_required
 @require_POST
 def galaxy_monitor(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+
     try:
         auth_manager = AuthManager(request)
         galaxy_manager = GalaxyManager(auth_manager)
@@ -181,9 +188,11 @@ def galaxy_monitor(request: HttpRequest) -> JsonResponse:
         return _create_galaxy_error(e)
 
 
-@login_required
 @require_POST
 def galaxy_stop(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+
     try:
         auth_manager = AuthManager(request)
         galaxy_manager = GalaxyManager(auth_manager)

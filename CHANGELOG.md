@@ -1,3 +1,7 @@
+### nova-dashboard, 0.17.1
+
+* The dashboard will no longer silently fail when a user's login has expired while on the site (thanks to John Duggan).
+
 ### nova-dashboard, 0.17.0
 
 * Auto-launched tools with a datafile input can now be managed through the dashboard (thanks to John Duggan).
