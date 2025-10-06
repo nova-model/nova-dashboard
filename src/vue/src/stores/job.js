@@ -28,7 +28,7 @@ export const useJobStore = defineStore("job", {
         async handleError(response, timeout, tool_id) {
             let message = ""
 
-            if (Cookies.get("sessionid") === undefined) {
+            if (response.status === 403) {
                 // The users login has expired and they must login to use the site. Refreshing makes it clear that they need to sign in without showing large error messages.
                 window.location.reload()
             } else {

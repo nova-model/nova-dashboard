@@ -16,7 +16,7 @@
             </v-banner>
         </template>
         <v-card>
-            <v-card-title class="mb-2 px-0">NDIP System Status</v-card-title>
+            <v-card-title class="mb-2 px-0">{{ galaxyAlias }} System Status</v-card-title>
             <v-card-subtitle v-if="alertManager.monitoringUrl">
                 <v-btn :href="alertManager.monitoringUrl" target="_blank">
                     View Monitoring Details
@@ -75,6 +75,7 @@
 import { onBeforeUnmount, onMounted, ref } from "vue"
 import AlertManager from "@/assets/js/alerts"
 
+const galaxyAlias = import.meta.env.VITE_GALAXY_ALIAS
 const alertManager = new AlertManager()
 const bannerStatus = ref("success")
 let pollInterval = null
@@ -105,14 +106,14 @@ const statusIcon = (status) => {
 
 const statusMessage = (status) => {
     if (status === "critical") {
-        return "Some NDIP systems are experiencing outages. Hover for details."
+        return `Some ${galaxyAlias} systems are experiencing outages. Hover for details.`
     }
 
     if (status === "warning") {
-        return "Some NDIP systems are experiencing degraded performance. Hover for details."
+        return `Some ${galaxyAlias} systems are experiencing degraded performance. Hover for details.`
     }
 
-    return "All NDIP systems are operating normally."
+    return `All ${galaxyAlias} systems are operating normally.`
 }
 
 const checkStatus = async () => {
@@ -120,7 +121,7 @@ const checkStatus = async () => {
         await alertManager.update()
         bannerStatus.value = alertManager.getStatus()
     } catch (error) {
-        console.error("Failed to retrieve NDIP system status:", error)
+        console.error(`Failed to retrieve ${galaxyAlias} system status:`, error)
     }
 }
 
