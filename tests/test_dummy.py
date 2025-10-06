@@ -1,4 +1,4 @@
-"""Dummy test to satisfy the unit test pipeline until https://code.ornl.gov/ndip/nova-dashboard/-/issues/2 is done."""
+"""Dummy test to satisfy the unit test pipeline."""
 
 
 def test_dummy() -> None:
