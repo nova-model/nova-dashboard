@@ -7,7 +7,6 @@ The history name to use for all jobs can be controlled via the
 GALAXY_HISTORY_NAME setting.
 """
 
-import json
 import logging
 from time import sleep
 from typing import Any, Dict, Optional
@@ -56,55 +55,43 @@ class GalaxyManager:
         return soup.get_text().strip().split("\n")[0].strip()
 
     def get_tools(self) -> dict[str, dict[str, Any]]:
-        # I retrieve the tools.json like this to avoid errors when running locally.
-        with open(settings.NOVA_TOOLS_PATH, "r") as file:
-            tool_json = json.load(file)
-        try:
-            with open(settings.PROTOTYPE_TOOLS_PATH, "r") as file:
-                prototype_tool_json = json.load(file)
-        except Exception:
-            # Prototype tools may not exist depending on the deployment environment.
-            # The file could also become mangled since anyone with access to the prototype branch can affect its
-            # generation. Due to these reasons, I think it's appropriate to be very broad in the error handling.
-            prototype_tool_json = {}
-        tool_details = {}
+        tool_json = {}
+
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
         for galaxy_category in galaxy_tools:
+            category_id = galaxy_category.get("id", "generic-tools")
+            category_name = galaxy_category.get("name", "General-Purpose Tools")
+            category_description = galaxy_category.get("description", "")
+
+            tool_json[category_id] = {
+                "name": category_name,
+                "description": category_description,
+                "tools": [],
+                "prototype_tools": [],
+            }
+
             for tool in galaxy_category.get("elems", []):
-                tool_details[tool["id"]] = tool
+                tool_id = tool["id"]
+                if "nova" not in tool_id:
+                    continue
 
-        for key, id in prototype_tool_json:
-            if key not in tool_json:
-                key = "misc"
+                tool_description = self._parse_tool_help(tool.get("help", ""))
+                tool_name = tool.get("name", "Unnamed Tool")
+                tool_version = tool.get("version", "unversioned")
 
-            category = tool_json[key]
-            if "prototype_tools" not in category:
-                category["prototype_tools"] = []
-            category["prototype_tools"].append(id)
+                if "prototype" in tool_id:
+                    tool_json[category_id]["prototype_tools"].append(
+                        {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
+                    )
+                else:
+                    tool_json[category_id]["tools"].append(
+                        {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
+                    )
 
-        for key in tool_json:
-            category = tool_json[key]
-            for index, tool_id in enumerate(category.get("tools", [])):
-                if tool_id in tool_details:
-                    galaxy_tool = tool_details[tool_id]
-
-                    category["tools"][index] = {
-                        "id": tool_id,
-                        "name": galaxy_tool["name"],
-                        "description": self._parse_tool_help(galaxy_tool["help"]),
-                        "version": galaxy_tool["version"],
-                    }
-            for index, tool_id in enumerate(category.get("prototype_tools", [])):
-                if tool_id in tool_details:
-                    galaxy_tool = tool_details[tool_id]
-
-                    category["prototype_tools"][index] = {
-                        "id": tool_id,
-                        "name": galaxy_tool["name"],
-                        "description": self._parse_tool_help(galaxy_tool["help"]),
-                        "version": galaxy_tool["version"],
-                    }
+        for category_id in list(tool_json.keys()):
+            if not tool_json[category_id]["tools"] and not tool_json[category_id]["prototype_tools"]:
+                del tool_json[category_id]
 
         return tool_json
 
