@@ -40,9 +40,9 @@ jobs:
       - name: Run mypy
         run: docker run --rm ${{ steps.build.outputs.imageid }} poetry run mypy .
       - name: Run Prettier
-        run: docker run --rm -w /opt/run/vue ${{ steps.build.outputs.iamgeid }} pnpm exec prettier --check .
+        run: docker run --rm -w /opt/run/vue ${{ steps.build.outputs.imageid }} pnpm exec prettier --check .
       - name: Run eslint
-        run: docker run --rm -w /opt/run/vue ${{ steps.build.outputs.iamgeid }} pnpm exec eslint .
+        run: docker run --rm -w /opt/run/vue ${{ steps.build.outputs.imageid }} pnpm exec eslint .
       - name: Unit tests
         run: docker run --rm ${{ steps.build.outputs.imageid }} poetry run pytest
       - name: Run coverage
