@@ -1,4 +1,4 @@
-name: Publish Package
+name: Publish Image
 
 on: workflow_dispatch
 
