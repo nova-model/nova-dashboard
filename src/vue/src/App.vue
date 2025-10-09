@@ -4,11 +4,27 @@
         <v-main>
             <v-app-bar elevation="0">
                 <v-app-bar-title class="cursor-pointer flex-0-1 mr-1" @click="$router.push('/')">
-                    Neutrons Application Dashboard
+                    <v-img alt="NOVA Logo" src="/logo_bw.png" width="200" />
                 </v-app-bar-title>
 
                 <InfoPanel />
                 <NotificationPanel ref="notificationPanel" v-show="is_admin" />
+
+                <a :href="galaxyUrl" class="ml-4 text-decoration-none text-white" target="_blank">
+                    {{ galaxyAlias }}
+                </a>
+                <span class="mx-1">&middot;</span>
+                <a :href="novaDocsUrl" class="text-decoration-none text-white" target="_blank">
+                    {{ novaAlias }} Documentation
+                </a>
+                <span class="mx-1">&middot;</span>
+                <a :href="novaTutorialUrl" class="text-decoration-none text-white" target="_blank">
+                    {{ novaAlias }} Tutorial
+                </a>
+                <span class="mx-1">&middot;</span>
+                <a :href="galaxyDocsUrl" class="text-decoration-none text-white" target="_blank">
+                    Admin Guide
+                </a>
 
                 <v-spacer />
 
@@ -107,38 +123,12 @@
                     width="3"
                 />
                 <a
-                    :href="galaxy_url"
+                    :href="galaxyUrl"
                     class="text-grey-lighten-1 text-caption text-decoration-none"
                     target="_blank"
                 >
-                    Powered by Calvera
+                    Powered by {{ galaxyAlias }}
                 </a>
-                <v-spacer />
-                <span class="text-caption">
-                    <a
-                        class="text-decoration-none text-black"
-                        href="https://nova-application-development.readthedocs.io/en/latest/"
-                        target="_blank"
-                    >
-                        Docs
-                    </a>
-                    &middot;
-                    <a
-                        class="text-decoration-none text-black"
-                        href="https://nova.ornl.gov/tutorial"
-                        target="_blank"
-                    >
-                        Tutorial
-                    </a>
-                    &middot;
-                    <a
-                        class="text-decoration-none text-black"
-                        href="https://calvera.ornl.gov/docs/admin_guide/services/dashboard/"
-                        target="_blank"
-                    >
-                        Administration
-                    </a>
-                </span>
                 <v-spacer />
                 <a
                     href="https://www.ornl.gov/"
@@ -153,20 +143,16 @@
                 <v-card class="text-center">
                     <v-card-text>
                         <p class="mb-4">
-                            You need to login to Calvera to be able to launch tools. Please go to
-                            <a target="_blank" :href="galaxy_url">{{ galaxy_url }}</a> and log into
-                            Calvera using your {{ user.login_type }} credentials.
+                            You need to login to {{ galaxyAlias }} to be able to launch tools.
+                            Please go to
+                            <a target="_blank" :href="galaxyUrl">{{ galaxyUrl }}</a> and log into
+                            {{ galaxyAlias }} using your {{ user.login_type }} credentials.
                         </p>
                         <p>
                             If you've already logged in, then you can refresh this page to dismiss
                             this dialog.
                         </p>
                     </v-card-text>
-                    <v-card-actions class="justify-center">
-                        <v-btn width="200" margin="auto" @click="stopLoginPrompt">
-                            Cancel Login
-                        </v-btn>
-                    </v-card-actions>
                 </v-card>
             </v-dialog>
         </v-main>
@@ -196,7 +182,12 @@ const { autoopen, given_name, is_admin, is_logged_in, ucams_auth_url, xcams_auth
 const route = useRoute()
 const drawer = ref(false)
 const notificationPanel = ref(null)
-const galaxy_url = import.meta.env.VITE_GALAXY_URL
+const galaxyAlias = import.meta.env.VITE_GALAXY_ALIAS
+const galaxyDocsUrl = import.meta.env.VITE_GALAXY_DOCS_URL
+const galaxyUrl = import.meta.env.VITE_GALAXY_URL
+const novaAlias = import.meta.env.VITE_NOVA_ALIAS
+const novaDocsUrl = import.meta.env.VITE_NOVA_DOCS_URL
+const novaTutorialUrl = import.meta.env.VITE_NOVA_TUTORIAL_URL
 
 const genericTools = computed(() => {
     const tools = getTools()
@@ -218,10 +209,6 @@ onMounted(async () => {
 
 function toggleDrawer() {
     drawer.value = !drawer.value
-}
-
-function stopLoginPrompt() {
-    user.resetUser()
 }
 
 function logout() {

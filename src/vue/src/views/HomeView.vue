@@ -2,9 +2,7 @@
 <template>
     <v-container class="align-start d-flex justify-center">
         <v-card width="1280">
-            <v-card-title class="text-center">
-                Welcome to the Neutrons Application Dashboard
-            </v-card-title>
+            <v-card-title class="text-center">Welcome to the {{ dashboardTitle }}</v-card-title>
 
             <v-card-text>
                 <p class="mb-4 text-center">
@@ -57,6 +55,8 @@ const props = defineProps({
 const router = useRouter()
 const job = useJobStore()
 const user = useUserStore()
+
+const dashboardTitle = import.meta.env.VITE_DASHBOARD_TITLE
 
 const availableTechniques = computed(() => {
     const techniques = {}

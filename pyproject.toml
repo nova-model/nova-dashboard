@@ -6,7 +6,7 @@ authors = ["Yakubov, Sergey <yakubovs@ornl.gov>", "Cage, Gregory <cagege@ornl.go
 readme = "README.md"
 license = "MIT"
 packages = [{include = "launcher_app", from = "src"}]
-keywords = ["NDIP", "Nova", "python", "dashboard"]
+keywords = ["Galaxy", "NOVA", "Python", "Dashboard"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
