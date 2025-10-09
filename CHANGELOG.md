@@ -1,3 +1,7 @@
+### nova-dashboard, 0.17.2
+
+* After logging, will automatically redirect to Galaxy to log in there (which should redirect back afterwards). (thanks to Greg Cage).
+
 ### nova-dashboard, 0.17.1
 
 * The dashboard will no longer silently fail when a user's login has expired while on the site (thanks to John Duggan).
