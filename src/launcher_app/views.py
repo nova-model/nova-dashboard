@@ -5,6 +5,7 @@ specified in urls.py file.
 """
 
 import json
+import urllib.parse
 from importlib.resources import open_text
 from typing import Any
 
@@ -113,10 +114,20 @@ def get_user(request: HttpRequest) -> JsonResponse:
             "given_name": given_name,
             "is_admin": admin,
             "is_logged_in": given_name is not None,
-            "ucams": auth_manager.get_ucams_auth_url(),
-            "xcams": auth_manager.get_xcams_auth_url(),
+            "ucams": _get_ucams_login_url(auth_manager),
+            "xcams": _get_xcams_login_url(auth_manager),
         }
     )
+
+
+def _get_ucams_login_url(auth_manager: AuthManager) -> str:
+    external_redirect = auth_manager.get_ucams_auth_url()
+    return f"{settings.GALAXY_UCAMS_URL}?external_redirect={urllib.parse.quote_plus(external_redirect)}"
+
+
+def _get_xcams_login_url(auth_manager: AuthManager) -> str:
+    external_redirect = auth_manager.get_xcams_auth_url()
+    return f"{settings.GALAXY_XCAMS_URL}?external_redirect={urllib.parse.quote_plus(external_redirect)}"
 
 
 def _create_galaxy_error(exception: Exception, **kwargs: Any) -> JsonResponse:

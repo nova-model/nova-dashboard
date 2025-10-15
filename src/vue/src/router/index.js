@@ -17,6 +17,7 @@ export function getTools() {
 }
 
 export default async function initRouter() {
+    const dashboardTitle = import.meta.env.VITE_DASHBOARD_TITLE
     const job = useJobStore()
     const response = await fetch("/api/galaxy/tools/")
     const toolResponse = await response.json()
@@ -25,7 +26,7 @@ export default async function initRouter() {
     }
     tools = toolResponse.tools
 
-    return createRouter({
+    const router = createRouter({
         history: createWebHistory(import.meta.env.BASE_URL), // This is html5 mode for Vue Router
         routes: [
             {
@@ -53,4 +54,10 @@ export default async function initRouter() {
             }
         ]
     })
+
+    router.afterEach(() => {
+        window.document.title = dashboardTitle
+    })
+
+    return router
 }

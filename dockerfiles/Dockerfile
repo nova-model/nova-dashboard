@@ -1,4 +1,4 @@
-FROM --platform=amd64 regproxy.ornl.gov/hub_proxy/ubuntu:noble AS source
+FROM --platform=amd64 ubuntu:noble AS source
 ARG DEBIAN_FRONTEND=noninteractive
 
 # make sure image can run as non-root user

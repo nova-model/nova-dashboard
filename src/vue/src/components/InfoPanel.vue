@@ -7,20 +7,21 @@
                 <v-card-title class="mb-2 px-0">About This Dashboard</v-card-title>
                 <v-card-text class="pa-0">
                     <p class="mb-2">
-                        This dashboard has been developed as a part of the NOVA LDRD project. It is
-                        meant to serve as a way to launch and manage interactive applications
-                        running in
-                        <a :href="galaxy_url" target="_blank">Galaxy</a>.
+                        The dashboard is currently running version {{ version }}.
+                        <a :href="changelogUrl" target="_blank">View Changelog</a>
+                    </p>
+
+                    <p class="mb-2">
+                        NOVA stands for Neutrons Open Visualization and Analysis Framework. This
+                        dashboard is meant to serve as a way to launch and manage interactive
+                        applications running in
+                        <a :href="galaxyProjectUrl" target="_blank">Galaxy</a>.
                     </p>
 
                     <p>
-                        The dashboard is currently running version {{ version }}.
-                        <a
-                            href="https://code.ornl.gov/ndip/nova-dashboard/-/blob/main/CHANGELOG.md"
-                            target="_blank"
-                        >
-                            View Changelog
-                        </a>
+                        This work was sponsored by the Laboratory Directed Research and Development
+                        Program of Oak Ridge National Laboratory, managed by UT-Battelle, LLC, for
+                        the U.S. Department of Energy.
                     </p>
                 </v-card-text>
             </v-card>
@@ -29,6 +30,7 @@
 </template>
 
 <script setup>
-const galaxy_url = import.meta.env.VITE_GALAXY_URL
+const changelogUrl = import.meta.env.VITE_CHANGELOG_URL
+const galaxyProjectUrl = import.meta.env.VITE_GALAXY_PROJECT_URL
 const version = import.meta.env.VITE_DASHBOARD_VERSION
 </script>
