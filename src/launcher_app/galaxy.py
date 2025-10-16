@@ -7,10 +7,9 @@ The history name to use for all jobs can be controlled via the
 GALAXY_HISTORY_NAME setting.
 """
 
-import json
 import logging
 from time import sleep
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -25,6 +24,16 @@ logger.setLevel(logging.DEBUG)
 
 TERMINAL_STATES = ["deleted", "deleting", "error", "ok"]
 NONTERMINAL_STATES = ["deleted_new", "failed", "new", "paused", "queued", "resubmitted", "running", "upload", "waiting"]
+
+
+class ToolDict(TypedDict):
+    """Typed dictionary for each tool section's tools."""
+
+    name: str
+    fallback_name: str
+    description: str
+    tools: List[Dict[str, Any]]
+    prototype_tools: List[Dict[str, Any]]
 
 
 class GalaxyManager:
@@ -55,58 +64,79 @@ class GalaxyManager:
         # Grab only the first line of the help text.
         return soup.get_text().strip().split("\n")[0].strip()
 
-    def get_tools(self) -> dict[str, dict[str, Any]]:
-        # I retrieve the tools.json like this to avoid errors when running locally.
-        with open(settings.NOVA_TOOLS_PATH, "r") as file:
-            tool_json = json.load(file)
-        try:
-            with open(settings.PROTOTYPE_TOOLS_PATH, "r") as file:
-                prototype_tool_json = json.load(file)
-        except Exception:
-            # Prototype tools may not exist depending on the deployment environment.
-            # The file could also become mangled since anyone with access to the prototype branch can affect its
-            # generation. Due to these reasons, I think it's appropriate to be very broad in the error handling.
-            prototype_tool_json = {}
-        tool_details = {}
+    def get_tools(self) -> Dict[str, ToolDict]:
+        tool_json: Dict[str, ToolDict] = {}
+
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
+        main_categories = []
+
         for galaxy_category in galaxy_tools:
+            category_id = galaxy_category.get("id", "generic-tools-main")
+
+            # Galaxy doesn't behave well if a non-prototype and prototype section/category have the same ID, so I've
+            # added the notion of a main category to allow us to give them separate IDs in Galaxy while grouping them
+            # here.
+            is_main_category = category_id.endswith("-main")
+            category_name = galaxy_category.get("name", "")
+            category_description = galaxy_category.get("description", "")
+
+            if is_main_category:
+                # Strip -main
+                category_id = category_id[:-5]
+                main_categories.append(category_id)
+
+            if category_id not in tool_json:
+                tool_json[category_id] = {
+                    "fallback_name": "",
+                    "name": "",
+                    "description": "",
+                    "tools": [],
+                    "prototype_tools": [],
+                }
+
+            if is_main_category:
+                tool_json[category_id]["name"] = category_name
+                tool_json[category_id]["description"] = category_description
+            tool_json[category_id]["fallback_name"] = category_id
+
             for tool in galaxy_category.get("elems", []):
-                tool_details[tool["id"]] = tool
+                tool_id = tool["id"]
+                if "nova" not in tool_id:
+                    continue
+                is_prototype_tool = "prototype" in tool_id
 
-        for key, id in prototype_tool_json:
-            if key not in tool_json:
-                key = "misc"
+                tool_description = self._parse_tool_help(tool.get("help", ""))
+                tool_name = tool.get("name", "Unnamed Tool")
+                tool_version = tool.get("version", "unversioned")
 
-            category = tool_json[key]
-            if "prototype_tools" not in category:
-                category["prototype_tools"] = []
-            category["prototype_tools"].append(id)
+                if is_prototype_tool:
+                    tool_json[category_id]["prototype_tools"].append(
+                        {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
+                    )
+                else:
+                    tool_json[category_id]["tools"].append(
+                        {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
+                    )
 
-        for key in tool_json:
-            category = tool_json[key]
-            for index, tool_id in enumerate(category.get("tools", [])):
-                if tool_id in tool_details:
-                    galaxy_tool = tool_details[tool_id]
+        # Galaxy returns the sections in a deterministic, but somewhat arbitrary order. This forces all of our main
+        # categories to appear first in alphabetical order.
+        ordered_json = {}
+        main_categories.sort()
+        for category_id in main_categories:
+            ordered_json[category_id] = tool_json[category_id]
+        for category_id in list(tool_json.keys()):
+            if category_id not in main_categories:
+                ordered_json[category_id] = tool_json[category_id]
 
-                    category["tools"][index] = {
-                        "id": tool_id,
-                        "name": galaxy_tool["name"],
-                        "description": self._parse_tool_help(galaxy_tool["help"]),
-                        "version": galaxy_tool["version"],
-                    }
-            for index, tool_id in enumerate(category.get("prototype_tools", [])):
-                if tool_id in tool_details:
-                    galaxy_tool = tool_details[tool_id]
+        # If a category has no tools (this is common for prototype categories with no NOVA tools), then we hide it.
+        for category_id in list(ordered_json.keys()):
+            if not ordered_json[category_id]["tools"] and not ordered_json[category_id]["prototype_tools"]:
+                del ordered_json[category_id]
+            elif not ordered_json[category_id]["name"]:
+                ordered_json[category_id]["name"] = ordered_json[category_id]["fallback_name"].replace("-", " ").title()
 
-                    category["prototype_tools"][index] = {
-                        "id": tool_id,
-                        "name": galaxy_tool["name"],
-                        "description": self._parse_tool_help(galaxy_tool["help"]),
-                        "version": galaxy_tool["version"],
-                    }
-
-        return tool_json
+        return ordered_json
 
     def ingest_file(self, connection: Connection, file_path: str) -> Optional[str]:
         file_store = connection.create_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_data")

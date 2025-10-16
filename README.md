@@ -25,9 +25,6 @@ A sample file `.env.sample` is provided that describes the available configurati
 secrets, make sure this does not get committed to the upstream repository. You can also set the environment variables
 manually in your environment or prefix them to your run command.
 
-When setting your environment variables, please download https://nova-test.ornl.gov/tools.json
-and ensure that `NOVA_TOOLS_PATH` points to it.
-
 After your environment is configured, run the following to start the client:
 
 ```bash

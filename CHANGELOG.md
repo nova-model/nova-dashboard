@@ -1,6 +1,10 @@
+### nova-dashboard, 0.18.0
+
+* Tool categories are now populated directly via Galaxy rather than a configuration file (thanks to John Duggan).
+
 ### nova-dashboard, 0.17.2
 
-* After logging, will automatically redirect to Galaxy to log in there (which should redirect back afterwards). (thanks to Greg Cage).
+* Users are automatically redirected to Galaxy to login (which should redirect back afterwards) (thanks to Greg Cage).
 
 ### nova-dashboard, 0.17.1
 
