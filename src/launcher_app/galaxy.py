@@ -69,17 +69,22 @@ class GalaxyManager:
 
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
+        main_categories = []
 
         for galaxy_category in galaxy_tools:
             category_id = galaxy_category.get("id", "generic-tools-main")
 
-            set_category_metadata = False
+            # Galaxy doesn't behave well if a non-prototype and prototype section/category have the same ID, so I've
+            # added the notion of a main category to allow us to give them separate IDs in Galaxy while grouping them
+            # here.
+            is_main_category = category_id.endswith("-main")
             category_name = galaxy_category.get("name", "")
             category_description = galaxy_category.get("description", "")
 
-            if category_id.endswith("-main"):
-                set_category_metadata = True
+            if is_main_category:
+                # Strip -main
                 category_id = category_id[:-5]
+                main_categories.append(category_id)
 
             if category_id not in tool_json:
                 tool_json[category_id] = {
@@ -90,7 +95,7 @@ class GalaxyManager:
                     "prototype_tools": [],
                 }
 
-            if set_category_metadata:
+            if is_main_category:
                 tool_json[category_id]["name"] = category_name
                 tool_json[category_id]["description"] = category_description
             tool_json[category_id]["fallback_name"] = category_id
@@ -114,13 +119,24 @@ class GalaxyManager:
                         {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
                     )
 
+        # Galaxy returns the sections in a deterministic, but somewhat arbitrary order. This forces all of our main
+        # categories to appear first in alphabetical order.
+        ordered_json = {}
+        main_categories.sort()
+        for category_id in main_categories:
+            ordered_json[category_id] = tool_json[category_id]
         for category_id in list(tool_json.keys()):
-            if not tool_json[category_id]["tools"] and not tool_json[category_id]["prototype_tools"]:
-                del tool_json[category_id]
-            elif not tool_json[category_id]["name"]:
-                tool_json[category_id]["name"] = tool_json[category_id]["fallback_name"].replace("-", " ").title()
+            if category_id not in main_categories:
+                ordered_json[category_id] = tool_json[category_id]
 
-        return tool_json
+        # If a category has no tools (this is common for prototype categories with no NOVA tools), then we hide it.
+        for category_id in list(ordered_json.keys()):
+            if not ordered_json[category_id]["tools"] and not ordered_json[category_id]["prototype_tools"]:
+                del ordered_json[category_id]
+            elif not ordered_json[category_id]["name"]:
+                ordered_json[category_id]["name"] = ordered_json[category_id]["fallback_name"].replace("-", " ").title()
+
+        return ordered_json
 
     def ingest_file(self, connection: Connection, file_path: str) -> Optional[str]:
         file_store = connection.create_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_data")
