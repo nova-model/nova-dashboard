@@ -9,7 +9,7 @@ GALAXY_HISTORY_NAME setting.
 
 import logging
 from time import sleep
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -24,6 +24,16 @@ logger.setLevel(logging.DEBUG)
 
 TERMINAL_STATES = ["deleted", "deleting", "error", "ok"]
 NONTERMINAL_STATES = ["deleted_new", "failed", "new", "paused", "queued", "resubmitted", "running", "upload", "waiting"]
+
+
+class ToolDict(TypedDict):
+    """Typed dictionary for each tool section's tools."""
+
+    name: str
+    fallback_name: str
+    description: str
+    tools: List[Dict[str, Any]]
+    prototype_tools: List[Dict[str, Any]]
 
 
 class GalaxyManager:
@@ -54,33 +64,48 @@ class GalaxyManager:
         # Grab only the first line of the help text.
         return soup.get_text().strip().split("\n")[0].strip()
 
-    def get_tools(self) -> dict[str, dict[str, Any]]:
-        tool_json = {}
+    def get_tools(self) -> Dict[str, ToolDict]:
+        tool_json: Dict[str, ToolDict] = {}
 
         # Retrieve the tool name and help text from the Galaxy server.
         galaxy_tools = requests_get(f"{settings.GALAXY_URL}/api/tools?tool_help=true").json()
+
         for galaxy_category in galaxy_tools:
-            category_id = galaxy_category.get("id", "generic-tools")
-            category_name = galaxy_category.get("name", "General-Purpose Tools")
+            category_id = galaxy_category.get("id", "generic-tools-main")
+
+            set_category_metadata = False
+            category_name = galaxy_category.get("name", "")
             category_description = galaxy_category.get("description", "")
 
-            tool_json[category_id] = {
-                "name": category_name,
-                "description": category_description,
-                "tools": [],
-                "prototype_tools": [],
-            }
+            if category_id.endswith("-main"):
+                set_category_metadata = True
+                category_id = category_id[:-5]
+
+            if category_id not in tool_json:
+                tool_json[category_id] = {
+                    "fallback_name": "",
+                    "name": "",
+                    "description": "",
+                    "tools": [],
+                    "prototype_tools": [],
+                }
+
+            if set_category_metadata:
+                tool_json[category_id]["name"] = category_name
+                tool_json[category_id]["description"] = category_description
+            tool_json[category_id]["fallback_name"] = category_id
 
             for tool in galaxy_category.get("elems", []):
                 tool_id = tool["id"]
                 if "nova" not in tool_id:
                     continue
+                is_prototype_tool = "prototype" in tool_id
 
                 tool_description = self._parse_tool_help(tool.get("help", ""))
                 tool_name = tool.get("name", "Unnamed Tool")
                 tool_version = tool.get("version", "unversioned")
 
-                if "prototype" in tool_id:
+                if is_prototype_tool:
                     tool_json[category_id]["prototype_tools"].append(
                         {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
                     )
@@ -92,6 +117,8 @@ class GalaxyManager:
         for category_id in list(tool_json.keys()):
             if not tool_json[category_id]["tools"] and not tool_json[category_id]["prototype_tools"]:
                 del tool_json[category_id]
+            elif not tool_json[category_id]["name"]:
+                tool_json[category_id]["name"] = tool_json[category_id]["fallback_name"].replace("-", " ").title()
 
         return tool_json
 
