@@ -21,7 +21,8 @@ export const useJobStore = defineStore("job", {
             timeout_error: false,
             timeout_duration: 60000,
             error_reset_duration: 15000,
-            monitor_interval: null
+            monitor_interval: null,
+            monitoring_autolaunch: false
         }
     },
     actions: {
@@ -29,8 +30,12 @@ export const useJobStore = defineStore("job", {
             let message = ""
 
             if (response.status === 403) {
-                // The users login has expired and they must login to use the site. Refreshing makes it clear that they need to sign in without showing large error messages.
-                window.location.reload()
+                if (this.monitoring_autolaunch) {
+                    return
+                } else {
+                    // The users login has expired and they must login to use the site. Refreshing makes it clear that they need to sign in without showing large error messages.
+                    window.location.reload()
+                }
             } else {
                 try {
                     // Most of our views will return a JSON with a detailed error message.
@@ -250,9 +255,10 @@ export const useJobStore = defineStore("job", {
                 this.has_monitored = true
             })
         },
-        startMonitor(allow_autoopen, callback) {
+        startMonitor(allow_autoopen, callback, monitoring_autolaunch) {
             this.allow_autoopen = allow_autoopen
             this.callback = callback
+            this.monitoring_autolaunch = monitoring_autolaunch
 
             if (this.monitor_interval === null) {
                 this.monitorJobs()

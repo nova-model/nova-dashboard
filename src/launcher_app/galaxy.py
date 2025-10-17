@@ -102,7 +102,7 @@ class GalaxyManager:
 
             for tool in galaxy_category.get("elems", []):
                 tool_id = tool["id"]
-                if "nova" not in tool_id:
+                if not tool_id.startswith(settings.TOOL_PREFIX):
                     continue
                 is_prototype_tool = "prototype" in tool_id
 

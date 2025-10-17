@@ -89,6 +89,9 @@ DATABASES = {
 # List of emails that can edit the system notification
 NOVA_ADMINS = json.loads(os.environ.get("ADMINISTRATOR_EMAILS", "[]"))
 
+# Prefix of tools to retrieve from Galaxy
+TOOL_PREFIX = os.environ.get("TOOL_PREFIX", "nova")
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

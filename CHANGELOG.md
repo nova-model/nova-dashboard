@@ -1,3 +1,7 @@
+### nova-dashboard, 0.18.1
+
+* Opening an autolaunch link while logged out will no longer fail (thanks to John Duggan).
+
 ### nova-dashboard, 0.18.0
 
 * Tool categories are now populated directly via Galaxy rather than a configuration file (thanks to John Duggan).
