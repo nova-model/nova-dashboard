@@ -85,7 +85,7 @@ onMounted(async () => {
     }
 
     if (user.is_logged_in) {
-        job.startMonitor(true)
+        job.startMonitor(true, null, false)
     } else {
         window.localStorage.setItem("lastpath", route.path)
         window.localStorage.setItem("redirect", true)

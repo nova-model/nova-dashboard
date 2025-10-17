@@ -132,7 +132,7 @@ onMounted(async () => {
         targetJobId = await job.launchJob(targetTool.value.id, inputs)
     }
 
-    job.startMonitor(false, monitorCallback)
+    job.startMonitor(false, monitorCallback, true)
     if (!user.is_logged_in) {
         window.localStorage.setItem("lastpath", route.path)
         window.localStorage.setItem("redirect", true)
