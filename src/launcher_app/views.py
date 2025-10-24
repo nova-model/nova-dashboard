@@ -59,7 +59,7 @@ def auth_redirect(request: HttpRequest, session_type: str) -> HttpResponseRedire
     try:
         given_name = user_info["given_name"]
     except KeyError:
-        given_name = user_info["giveName"]
+        given_name = user_info["givenName"]
 
     auth_manager.login(request, email, given_name)
 
