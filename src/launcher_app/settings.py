@@ -128,7 +128,6 @@ for provider_id in os.environ["OAUTH_PROVIDERS"].split():
         "scopes": os.environ.get(f"{env_prefix}_SCOPES"),
         "login_url": os.environ.get(f"{env_prefix}_LOGIN_URL"),
     }
-    print(OAUTH_PROVIDERS[provider_id])
 
 # Galaxy settings
 GALAXY_URL = os.environ["GALAXY_URL"]

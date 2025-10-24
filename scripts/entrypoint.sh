@@ -17,7 +17,7 @@ for provider in $OAUTH_PROVIDERS; do
     fi
 done
 export AUTH_REDIRECTS=$paths
-envsubst '$AUTH_REDIRECTS' < nginx.conf.template > nginx.conf
+envsubst '$AUTH_REDIRECTS' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 service nginx restart
 
 poetry run python manage.py migrate
