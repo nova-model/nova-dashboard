@@ -58,8 +58,31 @@
                         <v-menu activator="parent">
                             <v-list>
                                 <v-list-item v-for="provider in auth_urls" :href="provider.url">
+                                    <v-icon>mdi-open-in-new</v-icon>
                                     via {{ provider.name }}
                                 </v-list-item>
+
+                                <v-list-subheader>
+                                    <v-icon>mdi-information</v-icon>
+                                    Note on Authentication
+
+                                    <v-menu activator="parent" open-on-hover>
+                                        <v-card class="pa-4" width="400">
+                                            <v-card-title>Note on Authentication</v-card-title>
+                                            <v-card-text>
+                                                When logging into this dashboard, you will be
+                                                simultaneously logged into the
+                                                {{ galaxyAlias }} instance at
+                                                <a :href="galaxyUrl" target="_blank">
+                                                    {{ galaxyUrl }}
+                                                </a>
+                                                as this dashboard relies on it to function. Because
+                                                of this, you may be prompted to login or confirm
+                                                permissions with the authentication provider twice.
+                                            </v-card-text>
+                                        </v-card>
+                                    </v-menu>
+                                </v-list-subheader>
                             </v-list>
                         </v-menu>
                     </v-btn>
