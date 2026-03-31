@@ -27,7 +27,7 @@ Issue submission form
 {data["description"]}
 
 # Internal Issue Links""",
-                "title": f"{data['subject']}",
+                "title": f"{data['topic']}",
             },
         )
         result = response.json()

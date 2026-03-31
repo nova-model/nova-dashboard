@@ -25,11 +25,11 @@
                             label="Email Address"
                             disabled
                         />
-                        <v-autocomplete v-model="subject" :items="subjects" label="Subject">
+                        <v-autocomplete v-model="topic" :items="topics" label="Topic">
                             <template v-slot:item="data">
                                 <v-list-item
                                     v-bind="data.props"
-                                    class="bg-transparent"
+                                    class="bg-transparent pl-8"
                                 ></v-list-item>
                             </template>
                         </v-autocomplete>
@@ -77,7 +77,7 @@ const categories = getTools()
 const user = useUserStore()
 
 const email = ref("")
-const subject = ref("")
+const topic = ref("")
 const description = ref("")
 const submitting = ref(false)
 const issueUrl = ref("")
@@ -86,28 +86,30 @@ const textFieldMaxLength = 100
 const descriptionMaxLength = 500
 const submissionTimeout = 1000 // one second
 
-const isDisabled = computed(() => !email.value || !subject.value || !description.value)
+const isDisabled = computed(() => !email.value || !topic.value || !description.value)
 
-const subjects = ref([
+const keys = []
+const topics = ref([
     { type: "subheader", title: "General Issues" },
     "Login Issue",
     "Problem Starting Tools",
-    "Other",
-    { type: "subheader", title: "Tool Issues" }
+    "Other"
 ])
 Object.values(categories).forEach((category) => {
+    topics.value.push({ type: "subheader", title: category.name })
     ;[...category.tools, ...category.prototype_tools].forEach((tool) => {
         const key = `${category.name} - ${tool.name}`
 
-        if (!subjects.value.includes(key)) {
-            subjects.value.push(key)
+        if (!keys.includes(key)) {
+            keys.push(key)
+            topics.value.push({ title: tool.name, value: key })
         }
     })
 })
 
 function reset() {
     setDefaultEmail()
-    subject.value = ""
+    topic.value = ""
     description.value = ""
     submitting.value = false
 }
@@ -132,7 +134,7 @@ async function submit() {
         body: JSON.stringify({
             api_key: user.apiKey,
             email: email.value.slice(0, textFieldMaxLength),
-            subject: subject.value,
+            topic: topic.value,
             description: description.value.slice(0, descriptionMaxLength)
         })
     })
