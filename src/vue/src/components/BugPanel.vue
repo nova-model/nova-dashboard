@@ -3,51 +3,62 @@
         <v-card width="600">
             <v-card-title class="mb-2 px-0">Report Issue</v-card-title>
             <v-card-text class="pa-0">
-                <p class="mb-4">
-                    You can view existing tickets at
-                    <a :href="ticketUrl" target="_blank">{{ ticketUrl }}</a
-                    >.
-                </p>
+                <div v-if="!user.is_logged_in">
+                    <p>
+                        You must be logged in to directly report issues. If you are having
+                        difficulty logging in and need to contact us for support, please email us at
+                        <a :href="`mailto:${supportEmail}`" target="_blank">{{ supportEmail }}</a
+                        >.
+                    </p>
+                </div>
+                <div v-else>
+                    <p>
+                        If the below form does not work for you, then you may also email us at
+                        <a :href="`mailto:${supportEmail}`" target="_blank">{{ supportEmail }}</a
+                        >.
+                    </p>
 
-                <div class="issue-form">
-                    <div class="d-flex flex-row ga-1">
+                    <div class="issue-form">
                         <v-text-field
                             v-model="email"
                             :maxlength="textFieldMaxLength"
                             label="Email Address"
+                            disabled
                         />
-                        <v-text-field v-model="name" :maxlength="textFieldMaxLength" label="Name" />
+                        <v-autocomplete v-model="subject" :items="subjects" label="Subject">
+                            <template v-slot:item="data">
+                                <v-list-item
+                                    v-bind="data.props"
+                                    class="bg-transparent"
+                                ></v-list-item>
+                            </template>
+                        </v-autocomplete>
+                        <v-textarea
+                            v-model="description"
+                            :maxlength="descriptionMaxLength"
+                            label="Please Describe Your Issue"
+                            rows="5"
+                            auto-grow
+                            counter
+                            outlined
+                        />
                     </div>
-                    <v-select v-model="subject" :items="subjects" label="Subject">
-                        <template v-slot:item="data">
-                            <v-list-item v-bind="data.props" class="bg-transparent"></v-list-item>
-                        </template>
-                    </v-select>
-                    <v-textarea
-                        v-model="description"
-                        :maxlength="descriptionMaxLength"
-                        label="Please Describe Your Issue"
-                        rows="5"
-                        auto-grow
-                        counter
-                        outlined
-                    />
+
+                    <v-btn v-if="!submitting" :disabled="isDisabled" class="mb-4" @click="submit">
+                        Submit
+                    </v-btn>
+                    <v-progress-circular v-else-if="submitting" indeterminate />
+
+                    <p v-if="issueUrl">
+                        Issue was opened successfully. We will be in touch soon. You may view your
+                        opened issue at
+                        <a :href="issueUrl" target="_blank">{{ issueUrl }}</a
+                        >.
+                    </p>
+                    <p v-if="errorMessage">
+                        {{ errorMessage }}
+                    </p>
                 </div>
-
-                <v-btn v-if="!submitting" :disabled="isDisabled" class="mb-4" @click="submit">
-                    Submit
-                </v-btn>
-                <v-progress-circular v-else-if="submitting" indeterminate />
-
-                <p v-if="issueUrl">
-                    Issue was opened successfully. We will be in touch soon. You may view your
-                    opened issue at
-                    <a :href="issueUrl" target="_blank">{{ issueUrl }}</a
-                    >.
-                </p>
-                <p v-if="errorMessage">
-                    {{ errorMessage }}
-                </p>
             </v-card-text>
         </v-card>
     </v-menu>
@@ -56,15 +67,16 @@
 <script setup>
 import Cookies from "js-cookie"
 import { computed, onMounted, ref } from "vue"
+
+import { getTools } from "@/router"
 import { useUserStore } from "@/stores/user"
 
 const basePath = import.meta.env.VITE_BASE_PATH
-const ticketUrl = import.meta.env.VITE_TICKET_URL
-const subjects = ["Login Issue", "Problem Starting a Tool", "Problem Using a Tool", "Other"]
+const supportEmail = import.meta.env.VITE_SUPPORT_EMAIL
+const categories = getTools()
 const user = useUserStore()
 
 const email = ref("")
-const name = ref("")
 const subject = ref("")
 const description = ref("")
 const submitting = ref(false)
@@ -74,12 +86,23 @@ const textFieldMaxLength = 100
 const descriptionMaxLength = 500
 const submissionTimeout = 1000 // one second
 
-const isDisabled = computed(
-    () => !email.value || !name.value || !subject.value || !description.value
-)
+const isDisabled = computed(() => !email.value || !subject.value || !description.value)
 
-onMounted(() => {
-    setDefaultEmail()
+const subjects = ref([
+    { type: "subheader", title: "General Issues" },
+    "Login Issue",
+    "Problem Starting Tools",
+    "Other",
+    { type: "subheader", title: "Tool Issues" }
+])
+Object.values(categories).forEach((category) => {
+    ;[...category.tools, ...category.prototype_tools].forEach((tool) => {
+        const key = `${category.name} - ${tool.name}`
+
+        if (!subjects.value.includes(key)) {
+            subjects.value.push(key)
+        }
+    })
 })
 
 function reset() {
@@ -107,6 +130,7 @@ async function submit() {
             "X-CSRFToken": Cookies.get("csrftoken")
         },
         body: JSON.stringify({
+            api_key: user.apiKey,
             email: email.value.slice(0, textFieldMaxLength),
             subject: subject.value,
             description: description.value.slice(0, descriptionMaxLength)
@@ -131,6 +155,10 @@ async function postSubmit(response) {
 
     reset()
 }
+
+onMounted(() => {
+    setDefaultEmail()
+})
 
 defineExpose({ setDefaultEmail })
 </script>

@@ -45,7 +45,11 @@
             Login
         </v-btn>
 
-        <PreferencesPanel />
+        <v-btn v-if="is_logged_in" icon>
+            <v-icon>mdi-cogs</v-icon>
+
+            <PreferencesPanel />
+        </v-btn>
 
         <v-btn v-if="is_logged_in" icon>
             <v-icon>mdi-account-circle</v-icon>
@@ -96,8 +100,11 @@ const galaxyUrl = import.meta.env.VITE_GALAXY_URL
 const novaAlias = import.meta.env.VITE_NOVA_ALIAS
 const loginUrl = computed(() => baseLoginUrl + route.fullPath.replace(basePath, "/"))
 
+const bugPanel = ref(null)
+
 onMounted(async () => {
     await user.getUser()
+    bugPanel.value.setDefaultEmail()
 })
 </script>
 

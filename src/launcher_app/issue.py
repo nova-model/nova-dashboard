@@ -16,7 +16,7 @@ class IssueManager:
             json={
                 "description": f"""# Reported By
 
-{data["email"]} {data["name"]}
+{data["email"]}
 
 # Mode of Contact
 

@@ -119,6 +119,9 @@ def report_issue(request: HttpRequest) -> HttpResponse:
 
     try:
         data = json.loads(request.body)
+        galaxy_manager = GalaxyManager(data.get("api_key", ""))
+        if not galaxy_manager.is_logged_in():
+            raise PermissionDenied()
         url = issue_manager.submit(data)
     except Exception:
         return HttpResponseBadRequest("unable to process request")

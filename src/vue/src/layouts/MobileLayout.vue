@@ -36,7 +36,7 @@
                 <v-list-item border="b-thin" class="cursor-pointer" prepend-icon="mdi-bug">
                     Report Issue
 
-                    <BugPanel ref="bugPanelMobile" />
+                    <BugPanel />
                 </v-list-item>
                 <v-list-item border="b-thin" class="cursor-pointer" prepend-icon="mdi-help">
                     Documentation
@@ -77,7 +77,7 @@
 
 <script setup>
 import { storeToRefs } from "pinia"
-import { computed, onMounted } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRoute } from "vue-router"
 
 import ActiveToolsPanel from "@/components/ActiveToolsPanel.vue"
