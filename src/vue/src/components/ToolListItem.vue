@@ -38,7 +38,7 @@
         </v-list-item-subtitle>
 
         <template v-slot:append>
-            <v-list-item-action>
+            <v-list-item-action class="mr-0">
                 <v-btn v-if="!is_logged_in" disabled>Sign in to run apps</v-btn>
                 <v-btn v-else-if="!has_monitored" disabled>Checking login status</v-btn>
                 <div v-else>
