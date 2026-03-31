@@ -14,11 +14,6 @@
 
                     <ActiveToolsPanel :tool-list="props.toolList" class="mr-4" />
                 </v-list-item>
-                <v-list-item border="b-thin" class="cursor-pointer" prepend-icon="mdi-information">
-                    About This Dashboard
-
-                    <InfoPanel />
-                </v-list-item>
                 <v-list-item
                     :href="galaxyUrl"
                     border="b-thin"
@@ -39,7 +34,7 @@
                     <BugPanel />
                 </v-list-item>
                 <v-list-item border="b-thin" class="cursor-pointer" prepend-icon="mdi-help">
-                    Documentation
+                    About This Dashboard
 
                     <HelpPanel />
                 </v-list-item>
@@ -77,14 +72,13 @@
 
 <script setup>
 import { storeToRefs } from "pinia"
-import { ref, computed, onMounted } from "vue"
+import { computed, onMounted } from "vue"
 import { useRoute } from "vue-router"
 
 import ActiveToolsPanel from "@/components/ActiveToolsPanel.vue"
 import BugPanel from "@/components/BugPanel.vue"
 import CitationPanel from "@/components/CitationPanel.vue"
 import HelpPanel from "@/components/HelpPanel.vue"
-import InfoPanel from "@/components/InfoPanel.vue"
 import PreferencesPanel from "@/components/PreferencesPanel.vue"
 import { useUserStore } from "@/stores/user"
 
