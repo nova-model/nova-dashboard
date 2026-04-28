@@ -2,6 +2,7 @@ import Cookies from "js-cookie"
 import { defineStore } from "pinia"
 
 const basePath = import.meta.env.VITE_BASE_PATH
+const galaxyUrl = import.meta.env.VITE_GALAXY_URL
 const mockUserEmail = import.meta.env.VITE_MOCK_USER_EMAIL
 const mockUserApiKey = import.meta.env.VITE_MOCK_USER_API_KEY
 
@@ -16,7 +17,8 @@ export const useUserStore = defineStore("user", {
             initial_login_failed: false,
             is_admin: false,
             is_logged_in: false,
-            ready: false
+            ready: false,
+            token_refresh_delay: 600000 // 10 minutes
         }
     },
     actions: {
@@ -85,9 +87,10 @@ export const useUserStore = defineStore("user", {
             }
 
             if (this.id === "") {
-                window.setTimeout(() => {
-                    this.getUser()
-                }, this.delay)
+                window.setTimeout(this.getUser, this.delay)
+            } else {
+                this.refreshToken()
+                window.setInterval(this.refreshToken, this.token_refresh_delay)
             }
         },
         mockUserLogin() {
@@ -106,6 +109,13 @@ export const useUserStore = defineStore("user", {
         toggleAutoopen() {
             this.autoopen = !this.autoopen
             window.localStorage.setItem("autoopen", this.autoopen)
+        },
+        async refreshToken() {
+            if (mockUserEmail && mockUserApiKey) {
+                return
+            }
+
+            await fetch(galaxyUrl)
         }
     }
 })
