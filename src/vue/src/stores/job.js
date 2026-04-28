@@ -198,7 +198,7 @@ export const useJobStore = defineStore("job", {
 
                         hasErrors = true
                         this.showErrorWithTimeout(
-                            `${galaxyAlias} error: ${job?.error ? job?.error : "something unexpected has occurred. Please try again."}`
+                            `${galaxyAlias} error: ${job?.error ? job?.error : "something unexpected has occurred. If this persists, please use the 'Report Issue' button in the header to let us know."}`
                         )
                     }
 
