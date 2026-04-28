@@ -1,3 +1,7 @@
+### nova-dashboard, 0.21.1
+
+* Added a fetch of the Galaxy homepage to force token refresh to smoothly handle signing key rotation (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.0
 
 * Added a form to the header for reporting issues (thanks to John Duggan).
