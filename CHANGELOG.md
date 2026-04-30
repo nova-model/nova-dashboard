@@ -1,3 +1,7 @@
+### nova-dashboard, 0.21.1
+
+* Direct users to report issues when tools fail unexpectedly (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.0
 
 * Added a form to the header for reporting issues (thanks to John Duggan).
