@@ -7,6 +7,7 @@ ENV PNPM_HOME=/pnpm
 RUN apt update && apt upgrade -y && apt install -y \
     curl \
     gettext-base \
+    libatomic1 \
     software-properties-common \
     nginx
 RUN add-apt-repository ppa:deadsnakes/ppa -y
