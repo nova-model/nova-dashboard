@@ -1,3 +1,7 @@
+### nova-dashboard, 0.21.2
+
+* Prevent launch URLs from launching multiple jobs unless input parameters are provided (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.1
 
 * Direct users to report issues when tools fail unexpectedly (thanks to John Duggan).

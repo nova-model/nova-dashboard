@@ -69,6 +69,10 @@ async function monitorCallback() {
     }
 
     for (const job of all_jobs.value) {
+        if (!hasInputs && job.tool_id === targetTool.value.id) {
+            targetJobId = job.job_id
+        }
+
         if (job.job_id === targetJobId) {
             targetJob.value = job
         }

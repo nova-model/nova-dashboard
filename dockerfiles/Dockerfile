@@ -7,6 +7,7 @@ ENV PNPM_HOME=/pnpm
 RUN apt update && apt upgrade -y && apt install -y \
     curl \
     gettext-base \
+    libatomic1 \
     software-properties-common \
     nginx
 RUN add-apt-repository ppa:deadsnakes/ppa -y
@@ -18,7 +19,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt install -y nodejs
 ENV SHELL=bash
 RUN curl -fsSL https://get.pnpm.io/install.sh | sh -
-ENV PATH="$PATH:$PNPM_HOME"
+ENV PATH="$PATH:$PNPM_HOME/bin"
+
+# Setup Vue.js
+ADD src/vue /opt/run/vue
+WORKDIR /opt/run/vue
+RUN pnpm install
 
 # Setup Django
 ADD ./ /opt/run/django
@@ -29,11 +35,6 @@ ENV PATH="/root/.pixi/bin:${PATH}"
 RUN pixi install
 SHELL [ "pixi", "run", "--manifest-path", "/opt/run/django" ]
 ENTRYPOINT [ "pixi", "run", "--manifest-path", "/opt/run/django" ]
-
-# Setup Vue.js
-ADD src/vue /opt/run/vue
-WORKDIR /opt/run/vue
-RUN pnpm install
 
 WORKDIR /opt/run/django
 RUN chmod og+rwX -R /pnpm
