@@ -1,6 +1,22 @@
-### nova-dashboard, 0.20.3
+### nova-dashboard, 0.21.2
 
 * Prevent launch URLs from launching multiple jobs unless input parameters are provided (thanks to John Duggan).
+
+### nova-dashboard, 0.21.1
+
+* Direct users to report issues when tools fail unexpectedly (thanks to John Duggan).
+
+### nova-dashboard, 0.21.0
+
+* Added a form to the header for reporting issues (thanks to John Duggan).
+
+### nova-dashboard, 0.20.4
+
+* Changed the endpoint used to retrieve the Galaxy API key to generate a new key if needed (thanks to John Duggan).
+
+### nova-dashboard, 0.20.3
+
+* Fix redirection to invalid page when underlying Galaxy instance is restarted (thanks to John Duggan).
 
 ### nova-dashboard, 0.20.2
 

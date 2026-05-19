@@ -146,6 +146,14 @@ class GalaxyManager:
         except Exception:
             return False
 
+    def is_logged_in(self) -> bool:
+        try:
+            with self.connection.connect() as connection:
+                connection.galaxy_instance.users.get_current_user()
+                return True
+        except Exception:
+            return False
+
     def launch_job(self, tool_id: str, inputs: dict[str, str]) -> str:
         with self.connection.connect() as connection:
             if inputs:

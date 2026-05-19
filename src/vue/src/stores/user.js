@@ -13,6 +13,7 @@ export const useUserStore = defineStore("user", {
             delay: 2000,
             email: null,
             id: "",
+            initial_login_failed: false,
             is_admin: false,
             is_logged_in: false,
             ready: false
@@ -38,9 +39,9 @@ export const useUserStore = defineStore("user", {
                 return
             }
 
-            const apiKeyResponse = await fetch(`/api/users/${this.id}/api_key/detailed`)
-            const apiKeyData = await apiKeyResponse.json()
-            this.apiKey = apiKeyData.key
+            const apiKeyResponse = await fetch(`/api/users/${this.id}/api_key`)
+            const apiKey = await apiKeyResponse.text()
+            this.apiKey = apiKey.replace('"', "")
 
             this.getAdmin()
         },
@@ -62,12 +63,13 @@ export const useUserStore = defineStore("user", {
                     window.location.reload()
                 }
 
+                this.initial_login_failed = true
                 this.ready = true
                 return
             }
             this.email = userData.email
 
-            if (this.id !== "" && this.id !== userData.id) {
+            if (this.initial_login_failed || (this.id !== "" && this.id !== userData.id)) {
                 window.location.reload()
             }
             this.id = userData.id

@@ -90,7 +90,7 @@ async function monitorCallback() {
     if (targetJob.value !== null) {
         if (targetJob.value?.state === "error") {
             job.static_error = true
-            job.galaxy_error = `${galaxyAlias} error: ${targetJob.value?.error ? targetJob.value?.error : "something unexpected has occurred. Please try again."}`
+            job.galaxy_error = `${galaxyAlias} error: ${targetJob.value?.error ? targetJob.value?.error : "something unexpected has occurred. If this persists, please use the 'Report Issue' button in the header to let us know."}`
         } else if (targetJob.value?.state === "ready" || targetJob.value?.url_ready) {
             window.location.replace(targetJob.value.url)
         }
@@ -125,7 +125,7 @@ onMounted(async () => {
     if (targetTool.value === null) {
         router.replace({
             name: "not-found",
-            params: { catchAll: route.path.substring(1).split("/") }
+            params: { catchAll: route.path.substring(1).split("/").slice(1) }
         })
     }
 
