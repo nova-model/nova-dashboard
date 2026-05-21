@@ -15,20 +15,22 @@
                     <a :href="galaxyProjectUrl" target="_blank">Galaxy</a>.
                 </p>
 
-                <p class="mb-2">
-                    This work was sponsored by the Laboratory Directed Research and Development
-                    Program of Oak Ridge National Laboratory, managed by UT-Battelle, LLC, for the
-                    U.S. Department of Energy.
-                </p>
-
                 <div class="mb-2 text-h6">Documentation</div>
 
-                <p>
+                <p class="mb-2">
                     <a :href="novaDocsUrl" target="_blank">{{ novaAlias }} Documentation</a>
                     <span class="mx-2"></span>
                     <a :href="novaTutorialUrl" target="_blank">{{ novaAlias }} Tutorial</a>
                     <span class="mx-2"></span>
                     <a :href="galaxyDocsUrl" target="_blank">Admin Guide</a>
+                </p>
+
+                <div class="mb-2 text-h6">Acknowledgement Statement</div>
+
+                <p>
+                    This work was sponsored by the Laboratory Directed Research and Development
+                    Program of Oak Ridge National Laboratory, managed by UT-Battelle, LLC, for the
+                    U.S. Department of Energy.
                 </p>
             </v-card-text>
         </v-card>
