@@ -92,6 +92,8 @@ DATABASES = {
 TOOL_PREFIX = os.environ.get("TOOL_PREFIX", "nova")
 # Tool ID that will always fail for testing error states.
 TEST_TOOL_ID = os.environ.get("TEST_TOOL_ID", "")
+# Extra Galaxy tools not using the prefix to retrieve from Galaxy
+EXTRA_TOOLS = os.environ.get("EXTRA_TOOLS", "").split(",")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

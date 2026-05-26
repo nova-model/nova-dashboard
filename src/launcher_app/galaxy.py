@@ -90,8 +90,12 @@ class GalaxyManager:
             tool_json[category_id]["fallback_name"] = category_id
 
             for tool in galaxy_category.get("elems", []):
-                tool_id = tool["id"]
-                if not tool_id.startswith(settings.TOOL_PREFIX) and tool_id != settings.TEST_TOOL_ID:
+                tool_id = tool["id"].strip()
+                if (
+                    not tool_id.startswith(settings.TOOL_PREFIX)
+                    and tool_id != settings.TEST_TOOL_ID
+                    and tool_id not in settings.EXTRA_TOOLS
+                ):
                     continue
                 is_prototype_tool = "prototype" in tool_id
 
