@@ -20,6 +20,9 @@
                         :state="targetJob !== null ? targetJob.state : 'connecting'"
                         :url="targetJob !== null ? targetJob.url : ''"
                     />
+                    <v-snackbar :model-value="targetJob?.state === 'ok'" :timeout="snackbarTimeout">
+                        {{ targetTool?.name }} finished running.
+                    </v-snackbar>
                 </div>
             </v-card-text>
         </v-card>
@@ -49,7 +52,8 @@ const { is_logged_in } = storeToRefs(user)
 const route = useRoute()
 const router = useRouter()
 
-const delay = 2000
+const delay = 2000 // 2 seconds
+const snackbarTimeout = 5000 // 5 seconds
 const targetJob = ref(null)
 const targetTool = ref(null)
 let inputs = {}

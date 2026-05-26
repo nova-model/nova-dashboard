@@ -11,13 +11,17 @@
         </v-card>
     </v-menu>
 
-    <v-progress-circular class="ml-1" indeterminate />
+    <v-progress-circular v-if="props?.state !== 'ok'" class="ml-1" indeterminate />
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from "vue"
 
 const props = defineProps({
+    name: {
+        required: true,
+        type: String
+    },
     state: {
         required: true,
         type: String
@@ -48,6 +52,12 @@ const status_text = computed(() => {
         return `Waiting for application to respond...`
     }
 
+    if (props.state === "ok") {
+        is_slow.value = false
+
+        return "Application ran successfully."
+    }
+
     if (["new", "queued", "running"].includes(props.state) && !props.urlReady) {
         return `Initializing application...`
     }
@@ -62,7 +72,7 @@ onMounted(() => {
         // Give Galaxy 10 seconds to launch the Docker container before reporting it as slow to respond.
         setTimeout(() => {
             // If there is a URL, then the container started during this timeout.
-            if (!props.url) {
+            if (!props.url && !props?.state === "ok") {
                 is_slow.value = true
             }
         }, 10000)

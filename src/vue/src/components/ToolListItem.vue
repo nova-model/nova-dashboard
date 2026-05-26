@@ -48,6 +48,12 @@
                         :url="jobs[tool.id]?.url"
                         :url-ready="jobs[tool.id]?.url_ready"
                     />
+                    <v-snackbar
+                        :model-value="jobs[tool.id]?.state === 'ok'"
+                        :timeout="snackbarTimeout"
+                    >
+                        {{ tool.name }} finished running.
+                    </v-snackbar>
 
                     <v-btn
                         v-if="canLaunch(jobs, tool.id) && props.job === null"
@@ -106,6 +112,7 @@ const { is_logged_in } = storeToRefs(user)
 const linkCopied = ref(false)
 
 const basePath = import.meta.env.VITE_BASE_PATH
+const snackbarTimeout = 5000 // 5 seconds
 
 function canLaunch(jobs, tool_id) {
     return !["submitting", "new", "queued", "running", "ready", "stopping"].includes(

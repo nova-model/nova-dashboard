@@ -191,7 +191,9 @@ export const useJobStore = defineStore("job", {
                         this.jobs[job.tool_id].state = job.state
                     }
 
-                    if (["deleted", "deleting", "ok"].includes(job.state)) {
+                    if (job.state === "ok") {
+                        this.jobs[job.tool_id].state = "ok"
+                    } else if (["deleted", "deleting"].includes(job.state)) {
                         delete this.jobs[job.tool_id]
                     } else if (job.state === "error" && !this.failed_jobs.includes(job.job_id)) {
                         this.failed_jobs.push(job.job_id)
@@ -237,7 +239,7 @@ export const useJobStore = defineStore("job", {
                         // Tool stopped gracefully
                         delete this.jobs[tool_id]
                     } else if (
-                        !["error", "running", "ready", "stopping"].includes(job.state) &&
+                        !["ok", "error", "running", "ready", "stopping"].includes(job.state) &&
                         Date.now() - job.start > this.timeout_duration
                     ) {
                         // The job hasn't started in one minute, something unexpected has happened.
