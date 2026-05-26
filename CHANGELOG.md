@@ -1,3 +1,7 @@
+### nova-dashboard, 0.21.4
+
+* Added text to notify users when jobs are stopped outside of this dashboard (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.3
 
 * Reorganized the help panel to better match NDIP's new help page (thanks to John Duggan).
