@@ -9,15 +9,11 @@
 
             <StatusPanel />
             <v-banner
-                v-if="
-                    notificationPanel &&
-                    notificationPanel.displayNotification &&
-                    notificationPanel.notificationMessage
-                "
+                v-if="notification?.display && notification?.message"
                 class="bg-warning justify-center py-0"
             >
                 <v-icon class="mr-1">mdi-information-outline</v-icon>
-                {{ notificationPanel.notificationMessage }}
+                {{ notification?.message }}
             </v-banner>
 
             <v-fab
@@ -79,15 +75,16 @@ import MobileLayout from "@/layouts/MobileLayout.vue"
 import ToolDrawer from "@/components/ToolDrawer.vue"
 import { getTools } from "@/router"
 import { useJobStore } from "@/stores/job"
+import { useNotificationStore } from "@/stores/notification"
 import { useUserStore } from "@/stores/user"
 import StatusPanel from "@/components/StatusPanel.vue"
 
 const { mdAndUp } = useDisplay()
 const job = useJobStore()
 const { all_jobs, jobs, running } = storeToRefs(job)
+const notification = useNotificationStore()
 const user = useUserStore()
 const drawer = ref(false)
-const notificationPanel = ref(null)
 const galaxyAlias = import.meta.env.VITE_GALAXY_ALIAS
 const galaxyUrl = import.meta.env.VITE_GALAXY_URL
 

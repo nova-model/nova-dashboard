@@ -3,7 +3,7 @@
         <v-app-bar-title class="cursor-pointer flex-0-1 mr-1" @click="$router.push(basePath)">
             <v-img :src="`${basePath}logo_bw.png`" alt="NOVA Logo" width="200" />
         </v-app-bar-title>
-        <NotificationPanel ref="notificationPanel" v-show="is_admin" />
+        <NotificationPanel v-show="is_admin" />
         <a :href="galaxyUrl" class="mx-2 text-decoration-none text-white" target="_blank">
             <v-tooltip activator="parent">{{ galaxyAlias }}</v-tooltip>
 

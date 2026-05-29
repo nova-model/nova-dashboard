@@ -1,5 +1,11 @@
+### nova-dashboard, 0.21.6
+
+* Fix regression causing system notification banner to not render (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.5
-* Added ndip-k8s.ornl.gov to the allowed servers list
+
+* Added ndip-k8s.ornl.gov to the allowed servers list (thanks to Andrew Ayres).
+
 ### nova-dashboard, 0.21.4
 
 * Added text to notify users when jobs are stopped outside of this dashboard (thanks to John Duggan).
