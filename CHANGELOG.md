@@ -1,3 +1,7 @@
+### nova-dashboard, 0.21.7
+
+* Upgrade internal nginx version to fix vulnerability scans (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.6
 
 * Fix regression causing system notification banner to not render (thanks to John Duggan).
