@@ -2,25 +2,41 @@
 <template>
     <v-list-item>
         <template v-slot:prepend>
-            <v-btn
-                :href="getAutolaunchURL(tool.id)"
-                class="mr-2"
-                size="x-small"
-                icon
-                rounded
-                tile
-                @click.prevent="setClipboard(getAutolaunchURL(tool.id))"
-            >
-                <v-icon>mdi-content-copy</v-icon>
+            <v-btn-group class="mr-2" color="secondary" density="comfortable" divided>
+                <v-btn
+                    :href="getAutolaunchURL(tool.id)"
+                    class="px-1"
+                    size="x-small"
+                    width="32"
+                    icon
+                    @click.prevent="setClipboard(getAutolaunchURL(tool.id))"
+                >
+                    <v-icon>mdi-content-copy</v-icon>
 
-                <v-tooltip activator="parent" max-width="300" open-delay="250">
-                    <p v-if="linkCopied">Auto-launch link copied!</p>
-                    <p v-else>
-                        Click to copy a direct link to this app. If you use this tool frequently,
-                        consider creating a browser bookmark or desktop shortcut to this link.
-                    </p>
-                </v-tooltip>
-            </v-btn>
+                    <v-tooltip activator="parent" max-width="300" open-delay="250">
+                        <p v-if="linkCopied">Auto-launch link copied!</p>
+                        <p v-else>
+                            Click to copy a direct link to this app. If you use this tool
+                            frequently, consider creating a browser bookmark or desktop shortcut to
+                            this link.
+                        </p>
+                    </v-tooltip>
+                </v-btn>
+                <v-btn
+                    :href="tool.documentation"
+                    class="px-1"
+                    size="x-small"
+                    target="_blank"
+                    width="32"
+                    icon
+                >
+                    <v-icon>mdi-file-document</v-icon>
+
+                    <v-tooltip activator="parent" max-width="300" open-delay="250">
+                        <p>View this tool's documentation.</p>
+                    </v-tooltip>
+                </v-btn>
+            </v-btn-group>
         </template>
 
         <v-list-item-title>

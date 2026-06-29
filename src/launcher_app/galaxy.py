@@ -102,14 +102,27 @@ class GalaxyManager:
                 tool_description = self._parse_tool_help(tool.get("help", ""))
                 tool_name = tool.get("name", "Unnamed Tool")
                 tool_version = tool.get("version", "unversioned")
+                tool_documentation_link = tool.get("documentation", "")
 
                 if is_prototype_tool:
                     tool_json[category_id]["prototype_tools"].append(
-                        {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
+                        {
+                            "id": tool_id,
+                            "description": tool_description,
+                            "name": tool_name,
+                            "version": tool_version,
+                            "documentation": tool_documentation_link,
+                        }
                     )
                 else:
                     tool_json[category_id]["tools"].append(
-                        {"id": tool_id, "description": tool_description, "name": tool_name, "version": tool_version}
+                        {
+                            "id": tool_id,
+                            "description": tool_description,
+                            "name": tool_name,
+                            "version": tool_version,
+                            "documentation": tool_documentation_link,
+                        }
                     )
 
         # Galaxy returns the sections in a deterministic, but somewhat arbitrary order. This forces all of our main
