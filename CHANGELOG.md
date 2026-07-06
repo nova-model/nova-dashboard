@@ -1,5 +1,6 @@
 ### nova-dashboard, 0.22.0
 
+* Add tool documentation links (thanks to John Duggan).
 * Allow stopping tools launched outside of the dashboard (thanks to John Duggan).
 
 ### nova-dashboard, 0.21.7
