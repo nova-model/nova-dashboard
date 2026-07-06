@@ -23,6 +23,7 @@
                     </v-tooltip>
                 </v-btn>
                 <v-btn
+                    v-if="tool.documentation"
                     :href="tool.documentation"
                     class="px-1"
                     size="x-small"
