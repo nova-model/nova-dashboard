@@ -22,6 +22,7 @@ logger.setLevel(logging.DEBUG)
 MAX_STDERR_LENGTH = 500
 TERMINAL_STATES = ["deleted", "deleting", "error", "ok"]
 NONTERMINAL_STATES = ["deleted_new", "failed", "new", "paused", "queued", "resubmitted", "running", "upload", "waiting"]
+RUNNING_STATES = ["running"]
 
 
 class ToolDict(TypedDict):
@@ -202,10 +203,14 @@ class GalaxyManager:
                 store = connection.get_data_store(name=settings.GALAXY_HISTORY_NAME)
                 datafile_tools_store = connection.get_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_datafile_tools")
 
-                jobs = connection.galaxy_instance.jobs.get_jobs(history_id=store.history_id, state=NONTERMINAL_STATES)
-                datafile_jobs = connection.galaxy_instance.jobs.get_jobs(
+                dashboard_jobs = connection.galaxy_instance.jobs.get_jobs(
+                    history_id=store.history_id, state=NONTERMINAL_STATES
+                )
+                datafile_tools = connection.galaxy_instance.jobs.get_jobs(
                     history_id=datafile_tools_store.history_id, state=NONTERMINAL_STATES
                 )
+                all_jobs = connection.galaxy_instance.jobs.get_jobs(state=RUNNING_STATES)
+                extra_jobs = [job for job in all_jobs if job not in dashboard_jobs and job not in datafile_tools]
                 last_terminal_jobs = connection.galaxy_instance.jobs.get_jobs(
                     history_id=store.history_id,
                     limit=5,  # There are a lot of these, and we are only interested in the most recent ones.
@@ -220,13 +225,17 @@ class GalaxyManager:
                     for _, known_job_id in tool_ids.items():
                         for job in last_terminal_jobs:
                             if job["id"] == known_job_id:
-                                jobs.append(job)
+                                dashboard_jobs.append(job)
 
-                for job in datafile_jobs:
+                for job in datafile_tools:
                     job["is_datafile_tool"] = True
-                    jobs.append(job)
+                    dashboard_jobs.append(job)
 
-                for job in jobs:
+                for job in extra_jobs:
+                    job["is_extra_tool"] = True
+                    dashboard_jobs.append(job)
+
+                for job in dashboard_jobs:
                     tool = Tool("")
                     tool.assign_id(new_id=job["id"], data_store=store)
                     try:
@@ -255,6 +264,7 @@ class GalaxyManager:
                         if state != "deleted":
                             data = {
                                 "is_datafile_tool": job.get("is_datafile_tool", False),
+                                "is_extra_tool": job.get("is_extra_tool", False),
                                 "job_id": job["id"],
                                 "tool_id": job["tool_id"],
                                 "state": state,
