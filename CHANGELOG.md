@@ -1,3 +1,7 @@
+### nova-dashboard, 0.22.0
+
+* Allow stopping tools launched outside of the dashboard (thanks to John Duggan).
+
 ### nova-dashboard, 0.21.7
 
 * Upgrade internal nginx version to fix vulnerability scans (thanks to John Duggan).
