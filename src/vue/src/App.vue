@@ -128,7 +128,11 @@ const toolList = computed(() => {
             })
 
             all_jobs.value.forEach((job) => {
-                if (job.is_datafile_tool && tool.id === job.tool_id && job.url_ready) {
+                if (
+                    (job.is_datafile_tool || job.is_extra_tool) &&
+                    tool.id === job.tool_id &&
+                    job.url_ready
+                ) {
                     runningTools.push({ job: job, tool: tool })
                 }
             })

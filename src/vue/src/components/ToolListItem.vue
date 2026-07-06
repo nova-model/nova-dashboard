@@ -47,6 +47,12 @@
             {{ tool.description }}
         </v-list-item-subtitle>
         <v-list-item-subtitle
+            v-else-if="props.job.is_extra_tool"
+            title="Launched outside of dashboard."
+        >
+            Launched outside of dashboard.
+        </v-list-item-subtitle>
+        <v-list-item-subtitle
             v-else-if="props.job.is_datafile_tool"
             :title="parseParams(props.job.parameters)"
         >

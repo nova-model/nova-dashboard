@@ -172,7 +172,7 @@ export const useJobStore = defineStore("job", {
 
                 // Look for jobs that are running
                 for (const job of data.jobs) {
-                    if (job.is_datafile_tool) {
+                    if (job.is_datafile_tool || job.is_extra_tool) {
                         continue
                     }
 
