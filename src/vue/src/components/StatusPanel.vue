@@ -2,7 +2,7 @@
     <v-menu
         :close-on-content-click="false"
         location="bottom center"
-        max-width="400"
+        max-width="600"
         min-width="0"
         open-on-hover
     >

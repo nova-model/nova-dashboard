@@ -15,15 +15,7 @@
                 </v-list-item>
             </template>
 
-            <v-list-item v-for="alias in service.aliases" class="bg-white border-none">
-                <template v-slot:prepend>
-                    <v-icon :color="AlertManager.statusColor(alias.status)">
-                        {{ AlertManager.statusIcon(alias.status) }}
-                    </v-icon>
-                </template>
-
-                {{ alias.name }}
-            </v-list-item>
+            <ServiceStatus v-for="child in service.children" :service="child" />
         </v-list-group>
         <v-list-item v-else class="bg-white border-none">
             <template v-slot:prepend>

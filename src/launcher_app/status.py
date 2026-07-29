@@ -32,13 +32,11 @@ class StatusManager:
 
     def process_prometheus_alerts(self, raw_alerts: Dict[str, Any]) -> List[Dict[str, Any]]:
         processed_alerts = []
-        processed_alerts.append(
-            {"alias": "CPU Node (SNS)", "environment": "prod", "group": "compute", "severity": "critical"}
-        )
         for alert in raw_alerts.get("data", {}).get("alerts", []):
             annotations = alert.get("annotations", {})
             labels = alert.get("labels", {})
             alias = labels.get("alias", "")
+            host_alias = labels.get("host_alias", "")
             environment = labels.get("env", "")
             group = labels.get("nova_group", "")
             severity = labels.get("severity", "")
@@ -51,6 +49,7 @@ class StatusManager:
                         "alias": alias,
                         "environment": environment,
                         "group": group,
+                        "host_alias": host_alias,
                         "severity": severity,
                         "subtitle": subtitle,
                         "title": title,
