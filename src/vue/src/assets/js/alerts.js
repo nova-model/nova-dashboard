@@ -1,4 +1,5 @@
 const basePath = import.meta.env.VITE_BASE_PATH
+const galaxyAlias = import.meta.env.VITE_GALAXY_ALIAS
 
 // Tracks the status of an individual alert alias.
 class Alias {
@@ -207,5 +208,49 @@ export default class AlertManager {
         for (const key in this.services) {
             this.services[key].update()
         }
+    }
+
+    static statusColor(status) {
+        if (status === "unavailable") {
+            return "grey"
+        }
+
+        if (status === "critical") {
+            return "error"
+        }
+
+        if (status === "warning") {
+            return "warning"
+        }
+
+        return "success"
+    }
+
+    static statusIcon(status) {
+        if (status === "critical") {
+            return "mdi-close-circle"
+        }
+
+        if (status === "warning") {
+            return "mdi-alert-circle"
+        }
+
+        return "mdi-check-circle"
+    }
+
+    static statusMessage(status) {
+        if (status === "unavailable") {
+            return `Unable to check ${galaxyAlias} status.`
+        }
+
+        if (status === "critical") {
+            return `Some ${galaxyAlias} systems are experiencing outages. Hover for details.`
+        }
+
+        if (status === "warning") {
+            return `Some ${galaxyAlias} systems are experiencing degraded performance. Hover for details.`
+        }
+
+        return `All ${galaxyAlias} systems are operating normally.`
     }
 }
