@@ -1,3 +1,7 @@
+### nova-dashboard, 0.22.1
+
+* Display instrument mount alerts specific to each available compute node (thanks to John Duggan).
+
 ### nova-dashboard, 0.22.0
 
 * Add tool documentation links (thanks to John Duggan).
