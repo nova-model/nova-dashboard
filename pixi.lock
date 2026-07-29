@@ -1497,8 +1497,8 @@ packages:
   requires_python: '>=3.10,<4.0'
 - pypi: ./
   name: nova-dashboard
-  version: 0.22.1
-  sha256: 889ab09ce543ee8bf95813cb8be2a50323ccaa67884a723acaea65ae6a6b7c55
+  version: 0.23.0
+  sha256: 0ddcd3eea6426ea3c70f9534bb46175bfa861af2baa1a2530fee7cdb6b53f5f2
   requires_python: '>=3.10,<3.14'
 - pypi: https://files.pythonhosted.org/packages/60/60/e780f57ec145e671b153a463b86d9970197b5f89e884113474d58a00c6c3/nova_galaxy-0.11.7-py3-none-any.whl
   name: nova-galaxy

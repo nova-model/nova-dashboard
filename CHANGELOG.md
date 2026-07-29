@@ -1,6 +1,7 @@
-### nova-dashboard, 0.22.1
+### nova-dashboard, 0.23.0
 
 * Display instrument mount alerts specific to each available compute node (thanks to John Duggan).
+* Warn users when running jobs while compute nodes or instrument mounts are experiencing outages (thanks to John Duggan).
 
 ### nova-dashboard, 0.22.0
 
