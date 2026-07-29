@@ -1,13 +1,24 @@
 <template>
     <span>{{ status_text }}</span>
-    <v-menu v-if="is_slow" :close-on-content-click="false" open-on-hover>
+    <v-menu v-if="is_slow" :close-on-content-click="false" max-width="400" open-on-hover>
         <template v-slot:activator="{ props }">
             <v-icon v-bind="props" class="mx-1" color="warning">mdi-information-outline</v-icon>
         </template>
 
         <v-card class="bg-white">
-            This is taking longer than usual. The pulsar node may be updating its Docker image to
-            the newest version of this application.
+            <v-card-title>This is taking longer than usual</v-card-title>
+
+            <v-card-text>
+                <p class="mb-2">
+                    If the system status banner at the top of the page shows errors, then please use
+                    the "Report Issue" button in the header if your tool fails to launch.
+                </p>
+
+                <p>
+                    Otherwise, the compute node may be updating your tool's Docker image to the
+                    newest version of this application.
+                </p>
+            </v-card-text>
         </v-card>
     </v-menu>
 

@@ -1,81 +1,62 @@
 const basePath = import.meta.env.VITE_BASE_PATH
+const galaxyAlias = import.meta.env.VITE_GALAXY_ALIAS
 
-// Tracks the status of an individual alert alias.
-class Alias {
-    constructor(name) {
-        this.name = name
-        this.status = "success"
-    }
-
-    reset() {
-        this.status = "success"
-    }
-
-    setStatus(alert) {
-        if (alert.severity === "critical") {
-            this.status = alert.severity
-        } else if (alert.severity === "warning" && this.status !== "critical") {
-            this.status = alert.severity
-        }
-    }
-}
-
-const INSTRUMENT_ALIASES = [
-    new Alias("HFIR-CG1A"),
-    new Alias("HFIR-CG1B"),
-    new Alias("HFIR-CG1D"),
-    new Alias("HFIR-CG2"),
-    new Alias("HFIR-CG3"),
-    new Alias("HFIR-CG4B"),
-    new Alias("HFIR-CG4C"),
-    new Alias("HFIR-CG4D"),
-    new Alias("HFIR-HB1"),
-    new Alias("HFIR-HB1A"),
-    new Alias("HFIR-HB2A"),
-    new Alias("HFIR-HB2B"),
-    new Alias("HFIR-HB2C"),
-    new Alias("HFIR-HB3"),
-    new Alias("HFIR-HB3A"),
-    new Alias("HFIR-NOWG"),
-    new Alias("HFIR-NOWV"),
-    new Alias("SNS-ARCS"),
-    new Alias("SNS-BL0"),
-    new Alias("SNS-BSS"),
-    new Alias("SNS-CNCS"),
-    new Alias("SNS-CORELLI"),
-    new Alias("SNS-EQSANS"),
-    new Alias("SNS-FNPB"),
-    new Alias("SNS-HYS"),
-    new Alias("SNS-LENS"),
-    new Alias("SNS-MANDI"),
-    new Alias("SNS-NOM"),
-    new Alias("SNS-NOWB"),
-    new Alias("SNS-NOWD"),
-    new Alias("SNS-NOWG"),
-    new Alias("SNS-NOWW"),
-    new Alias("SNS-NOWX"),
-    new Alias("SNS-NSE"),
-    new Alias("SNS-PG3"),
-    new Alias("SNS-REF_L"),
-    new Alias("SNS-REF_M"),
-    new Alias("SNS-SEQ"),
-    new Alias("SNS-SNAP"),
-    new Alias("SNS-TOPAZ"),
-    new Alias("SNS-USANS"),
-    new Alias("SNS-VENUS"),
-    new Alias("SNS-VIS"),
-    new Alias("SNS-VULCAN")
+const INSTRUMENT_MOUNTS = [
+    "HFIR-CG1A",
+    "HFIR-CG1B",
+    "HFIR-CG1D",
+    "HFIR-CG2",
+    "HFIR-CG3",
+    "HFIR-CG4B",
+    "HFIR-CG4C",
+    "HFIR-CG4D",
+    "HFIR-HB1",
+    "HFIR-HB1A",
+    "HFIR-HB2A",
+    "HFIR-HB2B",
+    "HFIR-HB2C",
+    "HFIR-HB3",
+    "HFIR-HB3A",
+    "HFIR-NOWG",
+    "HFIR-NOWV",
+    "SNS-ARCS",
+    "SNS-BL0",
+    "SNS-BSS",
+    "SNS-CNCS",
+    "SNS-CORELLI",
+    "SNS-EQSANS",
+    "SNS-FNPB",
+    "SNS-HYS",
+    "SNS-LENS",
+    "SNS-MANDI",
+    "SNS-NOM",
+    "SNS-NOWB",
+    "SNS-NOWD",
+    "SNS-NOWG",
+    "SNS-NOWW",
+    "SNS-NOWX",
+    "SNS-NSE",
+    "SNS-PG3",
+    "SNS-REF_L",
+    "SNS-REF_M",
+    "SNS-SEQ",
+    "SNS-SNAP",
+    "SNS-TOPAZ",
+    "SNS-USANS",
+    "SNS-VENUS",
+    "SNS-VIS",
+    "SNS-VULCAN"
 ]
 
 // Tracks the status of a service.
 class Service {
-    constructor(name, aliases) {
-        if (aliases === undefined) {
-            aliases = []
+    constructor(name, children) {
+        if (children === undefined) {
+            children = []
         }
 
         this.alerts = []
-        this.aliases = aliases.sort((a, b) => a.name.localeCompare(b.name))
+        this.children = children.sort((a, b) => a.name.localeCompare(b.name))
         this.countText = ""
         this.name = name
         this.status = "success"
@@ -86,38 +67,42 @@ class Service {
         this.countText = ""
         this.status = "success"
 
-        for (const alias of this.aliases) {
-            alias.reset()
+        for (const child of this.children) {
+            child.reset()
         }
     }
 
     addAlert(alert) {
         this.alerts.push(alert)
 
-        for (const alias of this.aliases) {
-            if (alias.name === alert.alias) {
-                alias.setStatus(alert)
+        for (const child of this.children) {
+            if (child.name === alert.alias || child.name === alert.host_alias) {
+                child.addAlert(alert)
             }
         }
     }
 
     update() {
+        for (const child of this.children) {
+            child.update()
+        }
+
         this.updateCountText()
         this.updateStatus()
     }
 
     updateCountText() {
-        let aliasDownCount = 0
-        for (const alias of this.aliases) {
-            if (alias.status !== "success") {
-                aliasDownCount++
+        let childDownCount = 0
+        for (const child of this.children) {
+            if (child.status !== "success") {
+                childDownCount++
             }
         }
 
-        if (this.aliases.length === 0) {
+        if (this.children.length === 0) {
             this.countText = ""
         } else {
-            this.countText = ` (${this.aliases.length - aliasDownCount} of ${this.aliases.length} up)`
+            this.countText = ` (${this.children.length - childDownCount} of ${this.children.length} up)`
         }
     }
 
@@ -150,28 +135,48 @@ export default class AlertManager {
     }
 
     async initServices() {
+        const response = await fetch(this.targetsUrl)
+        const targets = await response.json()
+
         this.services = {
             infrastructure: new Service("Infrastructure"),
-            instrument_data: new Service("Instrument Data", INSTRUMENT_ALIASES),
+            instrument_data: new Service(
+                "Instrument Data",
+                await this.getInstrumentAlerts(targets)
+            ),
             oncat: new Service("ONCat"),
-            compute: new Service("Compute Resources", await this.getAliases("compute")),
+            compute: new Service(
+                "Compute Resources",
+                await this.getSubservices(targets, "compute")
+            ),
             live_data: new Service("Live Data"),
             documentation: new Service("Documentation")
         }
     }
 
-    async getAliases(key) {
-        const response = await fetch(this.targetsUrl)
-        const targets = await response.json()
+    async getSubservices(targets, key, children) {
+        if (children === undefined) {
+            children = []
+        }
 
-        const aliases = {}
+        const services = {}
         for (const target of targets) {
             if (target.group === key) {
-                aliases[target.alias] = new Alias(target.alias)
+                services[target.alias] = new Service(target.alias, children)
             }
         }
 
-        return Object.values(aliases)
+        return Object.values(services)
+    }
+
+    async getInstrumentAlerts(targets) {
+        return this.getSubservices(
+            targets,
+            "compute",
+            INSTRUMENT_MOUNTS.map((mount) => {
+                return new Service(mount)
+            })
+        )
     }
 
     getStatus() {
@@ -207,5 +212,49 @@ export default class AlertManager {
         for (const key in this.services) {
             this.services[key].update()
         }
+    }
+
+    static statusColor(status) {
+        if (status === "unavailable") {
+            return "grey"
+        }
+
+        if (status === "critical") {
+            return "error"
+        }
+
+        if (status === "warning") {
+            return "warning"
+        }
+
+        return "success"
+    }
+
+    static statusIcon(status) {
+        if (status === "critical") {
+            return "mdi-close-circle"
+        }
+
+        if (status === "warning") {
+            return "mdi-alert-circle"
+        }
+
+        return "mdi-check-circle"
+    }
+
+    static statusMessage(status) {
+        if (status === "unavailable") {
+            return `Unable to check ${galaxyAlias} status.`
+        }
+
+        if (status === "critical") {
+            return `Some ${galaxyAlias} systems are experiencing outages. Hover for details.`
+        }
+
+        if (status === "warning") {
+            return `Some ${galaxyAlias} systems are experiencing degraded performance. Hover for details.`
+        }
+
+        return `All ${galaxyAlias} systems are operating normally.`
     }
 }
