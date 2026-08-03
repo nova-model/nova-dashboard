@@ -29,16 +29,20 @@ DEBUG = os.environ["DEBUG"] != "false"
 ALLOWED_HOSTS = [
     "localhost",
     "nova.ornl.gov",
+    "nova-dev.ornl.gov",
     "nova-test.ornl.gov",
     "ndip.ornl.gov",
+    "ndip-dev.ornl.gov",
     "ndip-test.ornl.gov",
     "ndip-k8s.ornl.gov",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8080",
     "https://nova.ornl.gov",
+    "https://nova-dev.ornl.gov",
     "https://nova-test.ornl.gov",
     "https://ndip.ornl.gov",
+    "https://ndip-dev.ornl.gov",
     "https://ndip-test.ornl.gov",
     "https://ndip-k8s.ornl.gov",
 ]
