@@ -1,3 +1,7 @@
+### nova-dashboard, 0.23.1
+
+* Fix tool launch error shortly after using exit button (thanks to John Duggan).
+
 ### nova-dashboard, 0.23.0
 
 * Display instrument mount alerts specific to each available compute node (thanks to John Duggan).
