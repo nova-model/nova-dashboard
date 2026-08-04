@@ -186,14 +186,22 @@ export const useJobStore = defineStore("job", {
                         }
                     }
 
-                    this.jobs[job.tool_id].id = job.job_id
-                    if (!["ready", "stopping"].includes(this.jobs[job.tool_id].state)) {
+                    if (
+                        !["ready", "stopping"].includes(this.jobs[job.tool_id].state) &&
+                        job.state !== "ok"
+                    ) {
                         this.jobs[job.tool_id].state = job.state
                     }
 
                     if (job.state === "ok") {
-                        this.jobs[job.tool_id].state = "ok"
-                    } else if (["deleted", "deleting"].includes(job.state)) {
+                        if (this.jobs[job.tool_id].id === job.job_id) {
+                            this.jobs[job.tool_id].state = "ok"
+                        }
+                    } else {
+                        this.jobs[job.tool_id].id = job.job_id
+                    }
+
+                    if (["deleted", "deleting"].includes(job.state)) {
                         delete this.jobs[job.tool_id]
                     } else if (job.state === "error" && !this.failed_jobs.includes(job.job_id)) {
                         this.failed_jobs.push(job.job_id)
