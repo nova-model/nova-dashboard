@@ -62,6 +62,10 @@ class Service {
         this.status = "success"
     }
 
+    clone() {
+        return new Service(this.name, this.children)
+    }
+
     reset() {
         this.alerts = []
         this.countText = ""
@@ -161,8 +165,11 @@ export default class AlertManager {
 
         const services = {}
         for (const target of targets) {
+            // If we don't clone each child, then the class instance will be shared between each subservice.
+            // That would cause an alert in one of the subservices to visually indicate an error in all of them.
+            const subServiceChildren = children.map((child) => child.clone())
             if (target.group === key) {
-                services[target.alias] = new Service(target.alias, children)
+                services[target.alias] = new Service(target.alias, subServiceChildren)
             }
         }
 
