@@ -1,3 +1,7 @@
+### nova-dashboard, 1.0.0
+
+* Tagging the first stable release of the dashboard code (thanks to John Duggan).
+
 ### nova-dashboard, 0.23.2
 
 * Fix instrument mount alert display error (thanks to John Duggan).
