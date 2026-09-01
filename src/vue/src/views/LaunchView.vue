@@ -86,8 +86,8 @@ async function monitorCallback() {
         // We are logged in, the tool has been confirmed to exist, and we didn't find any job for it in Galaxy,
         // so we can launch it here.
         if (targetJob.value === null && !launched) {
-            targetJobId = await job.launchJob(targetTool.value.id, inputs)
             launched = true
+            targetJobId = await job.launchJob(targetTool.value.id, inputs)
         }
     }
 
