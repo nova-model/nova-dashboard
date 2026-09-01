@@ -19,6 +19,7 @@ export const useJobStore = defineStore("job", {
             galaxy_error: "",
             static_error: false,
             has_monitored: false,
+            is_monitoring: false,
             jobs: {},
             running: false,
             timeout: 2000,
@@ -143,142 +144,151 @@ export const useJobStore = defineStore("job", {
             }
         },
         async monitorJobs() {
-            if (this.user.apiKey === "") {
+            if (this.is_monitoring || this.user.apiKey === "") {
                 return
             }
 
-            const job_ids = {}
-            for (const j in this.jobs) {
-                job_ids[j] = this.jobs[j].id
-            }
-            const response = await this.galaxyFetch("api/galaxy/monitor/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": Cookies.get("csrftoken")
-                },
-                body: JSON.stringify({
-                    api_key: this.user.apiKey,
-                    tool_ids: job_ids
+            this.is_monitoring = true
+
+            try {
+                const job_ids = {}
+                for (const j in this.jobs) {
+                    job_ids[j] = this.jobs[j].id
+                }
+                const response = await this.galaxyFetch("api/galaxy/monitor/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": Cookies.get("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        api_key: this.user.apiKey,
+                        tool_ids: job_ids
+                    })
                 })
-            })
 
-            if (response.status === 200) {
-                const data = await response.json()
+                if (response.status === 200) {
+                    const data = await response.json()
 
-                let hasErrors = false
+                    let hasErrors = false
 
-                this.all_jobs = data.jobs
+                    this.all_jobs = data.jobs
 
-                // Look for jobs that are running
-                for (const job of data.jobs) {
-                    if (job.is_datafile_tool || job.is_extra_tool) {
-                        continue
-                    }
-
-                    if (!(job.tool_id in this.jobs)) {
-                        this.jobs[job.tool_id] = {
-                            id: job.job_id,
-                            start: Date.now(),
-                            submitted: false,
-                            url: "",
-                            url_ready: false
+                    // Look for jobs that are running
+                    for (const job of data.jobs) {
+                        if (job.is_datafile_tool || job.is_extra_tool) {
+                            continue
                         }
-                    }
 
-                    if (
-                        !["ready", "stopping"].includes(this.jobs[job.tool_id].state) &&
-                        job.state !== "ok"
-                    ) {
-                        this.jobs[job.tool_id].state = job.state
-                    }
-
-                    if (job.state === "ok") {
-                        if (this.jobs[job.tool_id].id === job.job_id) {
-                            this.jobs[job.tool_id].state = "ok"
+                        if (!(job.tool_id in this.jobs)) {
+                            this.jobs[job.tool_id] = {
+                                id: job.job_id,
+                                start: Date.now(),
+                                submitted: false,
+                                url: "",
+                                url_ready: false
+                            }
                         }
-                    } else {
-                        this.jobs[job.tool_id].id = job.job_id
-                    }
 
-                    if (["deleted", "deleting"].includes(job.state)) {
-                        delete this.jobs[job.tool_id]
-                    } else if (job.state === "error" && !this.failed_jobs.includes(job.job_id)) {
-                        this.failed_jobs.push(job.job_id)
-
-                        hasErrors = true
-                        this.showErrorWithTimeout(
-                            `${galaxyAlias} error: ${job?.error ? job?.error : "something unexpected has occurred. If this persists, please use the 'Report Issue' button in the header to let us know."}`
-                        )
-                    }
-
-                    if (job.url && !this.jobs[job.tool_id].url_ready) {
-                        this.jobs[job.tool_id].url = job.url
-                        this.jobs[job.tool_id].url_ready = job.url_ready
-                    }
-
-                    if (
-                        job.state === "running" &&
-                        this.jobs[job.tool_id].state !== "stopping" &&
-                        this.jobs[job.tool_id].state !== "ready" &&
-                        job.url_ready
-                    ) {
-                        this.user.getAutoopen()
                         if (
-                            this.user.autoopen &&
-                            this.allow_autoopen &&
-                            this.jobs[job.tool_id].submitted
+                            !["ready", "stopping"].includes(this.jobs[job.tool_id].state) &&
+                            job.state !== "ok"
                         ) {
-                            window.open(job.url, "_blank")
+                            this.jobs[job.tool_id].state = job.state
                         }
 
-                        this.jobs[job.tool_id].state = "ready"
+                        if (job.state === "ok") {
+                            if (this.jobs[job.tool_id].id === job.job_id) {
+                                this.jobs[job.tool_id].state = "ok"
+                            }
+                        } else {
+                            this.jobs[job.tool_id].id = job.job_id
+                        }
+
+                        if (["deleted", "deleting"].includes(job.state)) {
+                            delete this.jobs[job.tool_id]
+                        } else if (
+                            job.state === "error" &&
+                            !this.failed_jobs.includes(job.job_id)
+                        ) {
+                            this.failed_jobs.push(job.job_id)
+
+                            hasErrors = true
+                            this.showErrorWithTimeout(
+                                `${galaxyAlias} error: ${job?.error ? job?.error : "something unexpected has occurred. If this persists, please use the 'Report Issue' button in the header to let us know."}`
+                            )
+                        }
+
+                        if (job.url && !this.jobs[job.tool_id].url_ready) {
+                            this.jobs[job.tool_id].url = job.url
+                            this.jobs[job.tool_id].url_ready = job.url_ready
+                        }
+
+                        if (
+                            job.state === "running" &&
+                            this.jobs[job.tool_id].state !== "stopping" &&
+                            this.jobs[job.tool_id].state !== "ready" &&
+                            job.url_ready
+                        ) {
+                            this.user.getAutoopen()
+                            if (
+                                this.user.autoopen &&
+                                this.allow_autoopen &&
+                                this.jobs[job.tool_id].submitted
+                            ) {
+                                window.open(job.url, "_blank")
+                            }
+
+                            this.jobs[job.tool_id].state = "ready"
+                        }
                     }
+
+                    // Look for jobs that have stopped running
+                    Object.keys(this.jobs).forEach((tool_id) => {
+                        const job = this.jobs[tool_id]
+
+                        if (
+                            !["submitting", "new", "queued", "running"].includes(job.state) &&
+                            !data.jobs.some((target) => target.job_id === job.id)
+                        ) {
+                            // Tool stopped gracefully
+                            delete this.jobs[tool_id]
+                        } else if (
+                            !["ok", "error", "running", "ready", "stopping"].includes(job.state) &&
+                            Date.now() - job.start > this.timeout_duration
+                        ) {
+                            // The job hasn't started in one minute, something unexpected has happened.
+                            job.state = "error"
+
+                            this.showErrorWithTimeout(
+                                `${galaxyAlias} error: Tool failed to respond within one minute. This may be due to an outage on ${galaxyUrl}.`,
+                                tool_id
+                            )
+                        }
+                    })
+
+                    if (!hasErrors && !this.timeout_error && !this.static_error) {
+                        this.galaxy_error = ""
+                    }
+                } else {
+                    await this.handleError(response, false)
                 }
 
-                // Look for jobs that have stopped running
-                Object.keys(this.jobs).forEach((tool_id) => {
-                    const job = this.jobs[tool_id]
+                this.updateCalveraSpinner()
 
-                    if (
-                        !["submitting", "new", "queued", "running"].includes(job.state) &&
-                        !data.jobs.some((target) => target.job_id === job.id)
-                    ) {
-                        // Tool stopped gracefully
-                        delete this.jobs[tool_id]
-                    } else if (
-                        !["ok", "error", "running", "ready", "stopping"].includes(job.state) &&
-                        Date.now() - job.start > this.timeout_duration
-                    ) {
-                        // The job hasn't started in one minute, something unexpected has happened.
-                        job.state = "error"
+                if (this.callback !== undefined && this.callback !== null) {
+                    this.callback()
+                }
 
-                        this.showErrorWithTimeout(
-                            `${galaxyAlias} error: Tool failed to respond within one minute. This may be due to an outage on ${galaxyUrl}.`,
-                            tool_id
-                        )
-                    }
+                // nextTick ensures that any updates to the UI from this monitoring loop have been committed.
+                // Setting this flag will allow users to launch tools, which should only be possible after
+                // the UI has been updated with the results of the initial monitoring.
+                nextTick(() => {
+                    this.has_monitored = true
                 })
-
-                if (!hasErrors && !this.timeout_error && !this.static_error) {
-                    this.galaxy_error = ""
-                }
-            } else {
-                await this.handleError(response, false)
+            } finally {
+                this.is_monitoring = false
             }
-
-            this.updateCalveraSpinner()
-
-            if (this.callback !== undefined && this.callback !== null) {
-                this.callback()
-            }
-
-            // nextTick ensures that any updates to the UI from this monitoring loop have been committed.
-            // Setting this flag will allow users to launch tools, which should only be possible after
-            // the UI has been updated with the results of the initial monitoring.
-            nextTick(() => {
-                this.has_monitored = true
-            })
         },
         startMonitor(allow_autoopen, callback, monitoring_autolaunch) {
             this.allow_autoopen = allow_autoopen
