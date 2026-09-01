@@ -1,3 +1,8 @@
+### nova-dashboard, 1.0.1
+
+* Enforce synchronous monitoring of jobs (thanks to John Duggan).
+* Prevent duplicate job launches when Galaxy is under load on auto-launch (thanks to John Duggan).
+
 ### nova-dashboard, 1.0.0
 
 * Tagging the first stable release of the dashboard code (thanks to John Duggan).
