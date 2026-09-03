@@ -6,6 +6,7 @@ GALAXY_HISTORY_NAME setting.
 """
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 from typing import Any, Dict, List, Optional, TypedDict
 
@@ -23,6 +24,11 @@ MAX_STDERR_LENGTH = 500
 TERMINAL_STATES = ["deleted", "deleting", "error", "ok"]
 NONTERMINAL_STATES = ["deleted_new", "failed", "new", "paused", "queued", "resubmitted", "running", "upload", "waiting"]
 RUNNING_STATES = ["running"]
+
+# monitor_jobs() checks each job's status/URL independently over HTTP, so run those checks
+# concurrently instead of sequentially. Bounded so we don't hammer Galaxy when many jobs are
+# in flight at once.
+_MAX_MONITOR_WORKERS = 10
 
 
 class ToolDict(TypedDict):
@@ -209,29 +215,68 @@ class GalaxyManager:
 
             return job_id
 
-    def monitor_jobs(self, tool_ids: Dict[str, str]) -> list:
+    def monitor_jobs(self, tool_ids: Dict[str, str], user_id: str) -> list:
+        # This code has been bottlenecking performance of the dashboard, especially for admin users
+        # due to the serial network requests. I'm attempting to parallelize everything below into
+        # three steps.
         status_list = []
         try:
             with self.connection.connect() as connection:
-                store = connection.get_data_store(name=settings.GALAXY_HISTORY_NAME)
-                datafile_tools_store = connection.get_data_store(name=f"{settings.GALAXY_HISTORY_NAME}_datafile_tools")
+                # Step 1: Fetch the data stores and all running jobs
+                with ThreadPoolExecutor(max_workers=3) as executor:
+                    store_future = executor.submit(
+                        connection.get_data_store,
+                        name=settings.GALAXY_HISTORY_NAME,
+                    )
+                    datafile_tools_store_future = executor.submit(
+                        connection.get_data_store,
+                        name=f"{settings.GALAXY_HISTORY_NAME}_datafile_tools",
+                    )
+                    all_jobs_future = executor.submit(
+                        connection.galaxy_instance.jobs.get_jobs,
+                        state=RUNNING_STATES,
+                        user_id=user_id,
+                    )
+                    store = store_future.result()
+                    datafile_tools_store = datafile_tools_store_future.result()
+                    all_jobs = all_jobs_future.result()
 
-                dashboard_jobs = connection.galaxy_instance.jobs.get_jobs(
-                    history_id=store.history_id, state=NONTERMINAL_STATES
-                )
-                datafile_tools = connection.galaxy_instance.jobs.get_jobs(
-                    history_id=datafile_tools_store.history_id, state=NONTERMINAL_STATES
-                )
-                all_jobs = connection.galaxy_instance.jobs.get_jobs(state=RUNNING_STATES)
+                # Step 2: Jobs that are specific to one of the data stores.
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    dashboard_jobs_future = executor.submit(
+                        connection.galaxy_instance.jobs.get_jobs,
+                        history_id=store.history_id,
+                        state=NONTERMINAL_STATES,
+                        user_id=user_id,
+                    )
+                    datafile_tools_future = executor.submit(
+                        connection.galaxy_instance.jobs.get_jobs,
+                        history_id=datafile_tools_store.history_id,
+                        state=NONTERMINAL_STATES,
+                        user_id=user_id,
+                    )
+                    last_terminal_store_future = executor.submit(
+                        connection.galaxy_instance.jobs.get_jobs,
+                        history_id=store.history_id,
+                        limit=5,  # There are a lot of these, and we are only interested in the most recent ones.
+                        order_by="create_time",
+                        state=TERMINAL_STATES,
+                        user_id=user_id,
+                    )
+                    last_terminal_datafile_future = executor.submit(
+                        connection.galaxy_instance.jobs.get_jobs,
+                        history_id=datafile_tools_store.history_id,
+                        limit=5,
+                        order_by="create_time",
+                        state=TERMINAL_STATES,
+                        user_id=user_id,
+                    )
+                    dashboard_jobs = dashboard_jobs_future.result()
+                    datafile_tools = datafile_tools_future.result()
+                    last_terminal_jobs = last_terminal_store_future.result() + last_terminal_datafile_future.result()
+
                 extra_jobs = [job for job in all_jobs if job not in dashboard_jobs and job not in datafile_tools]
-                last_terminal_jobs = connection.galaxy_instance.jobs.get_jobs(
-                    history_id=store.history_id,
-                    limit=5,  # There are a lot of these, and we are only interested in the most recent ones.
-                    order_by="create_time",
-                    state=TERMINAL_STATES,
-                ) + connection.galaxy_instance.jobs.get_jobs(
-                    history_id=datafile_tools_store.history_id, limit=5, order_by="create_time", state=TERMINAL_STATES
-                )
+
                 # We only want to show terminal jobs if the dashboard is already aware of them. If the user refreshes
                 # the page after a job failed, then we don't want to display the error anymore.
                 if last_terminal_jobs:
@@ -248,7 +293,13 @@ class GalaxyManager:
                     job["is_extra_tool"] = True
                     dashboard_jobs.append(job)
 
-                for job in dashboard_jobs:
+                # Step 3: Check job details and fetch error messages for failed jobs.
+                def check_job(job: Dict[str, Any]) -> Optional[dict]:
+                    """Resolve one job's URL/status.
+
+                    Runs concurrently across jobs, so it must not mutate any shared state besides
+                    its own return value.
+                    """
                     tool = Tool("")
                     tool.assign_id(new_id=job["id"], data_store=store)
                     try:
@@ -256,7 +307,7 @@ class GalaxyManager:
 
                         url = ""
                         if state != "error":
-                            url = tool.get_url(max_tries=1)
+                            url = tool.get_url(max_tries=1, check_url=False)
 
                         if url:
                             try:
@@ -296,9 +347,17 @@ class GalaxyManager:
                                 ).get("stderr", "")[:MAX_STDERR_LENGTH]
                                 data["error"] = stderr
 
-                            status_list.append(data)
+                            return data
                     except Exception:  # TODO: Might try to handle these better
-                        continue
+                        pass
+                    return None
+
+                if dashboard_jobs:
+                    worker_count = min(len(dashboard_jobs), _MAX_MONITOR_WORKERS)
+                    with ThreadPoolExecutor(max_workers=worker_count) as executor:
+                        for data in executor.map(check_job, dashboard_jobs):
+                            if data is not None:
+                                status_list.append(data)
         except Exception as e:
             self._handle_galaxy_failure(e)
 

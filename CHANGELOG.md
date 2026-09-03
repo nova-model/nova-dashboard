@@ -1,3 +1,8 @@
+### nova-dashboard, 1.1.0
+
+* Parallelize independent requests to Galaxy to improve monitoring response times (thanks to John Duggan).
+* Filter jobs by user IDs to improve monitoring response times for NDIP administrators (thanks to John Duggan).
+
 ### nova-dashboard, 1.0.1
 
 * Enforce synchronous monitoring of jobs (thanks to John Duggan).

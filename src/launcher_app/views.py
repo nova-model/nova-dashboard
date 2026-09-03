@@ -85,7 +85,7 @@ def galaxy_monitor(request: HttpRequest) -> JsonResponse:
         data = json.loads(request.body)
         galaxy_manager = GalaxyManager(data.get("api_key", ""))
 
-        return JsonResponse({"jobs": galaxy_manager.monitor_jobs(data["tool_ids"])})
+        return JsonResponse({"jobs": galaxy_manager.monitor_jobs(data["tool_ids"], data["user_id"])})
     except Exception as e:
         return _create_galaxy_error(e)
 

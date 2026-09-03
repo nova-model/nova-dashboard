@@ -163,7 +163,8 @@ export const useJobStore = defineStore("job", {
                     },
                     body: JSON.stringify({
                         api_key: this.user.apiKey,
-                        tool_ids: job_ids
+                        tool_ids: job_ids,
+                        user_id: this.user.id
                     })
                 })
 
